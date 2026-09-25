@@ -182,6 +182,28 @@ input:focus,select:focus,textarea:focus{
   .eval-stat span{font-size:.58rem!important}
 }
 
+
+/* ===== RESUMEN INDIVIDUAL ===== */
+.roster-line{cursor:pointer;border-radius:10px}
+.roster-line:after{content:"›";color:var(--gold);font:400 1.35rem 'Staatliches';margin-left:6px}
+.person-summary-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.person-summary-name{font:400 1.75rem 'Staatliches';letter-spacing:.04em;color:var(--cream)}
+.person-summary-meta{color:var(--smoke);font-size:.78rem;margin-top:4px}
+.summary-progress{margin:18px 0;padding:15px;border:1px solid var(--line);background:var(--carbon);border-radius:13px}
+.summary-progress-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:9px}
+.summary-progress-top b{font:400 1.15rem 'Staatliches';color:var(--gold2)}
+.summary-bar{height:6px;background:rgba(212,169,78,.12);border-radius:999px;overflow:hidden}
+.summary-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--rojo),var(--dorado));border-radius:999px}
+.summary-tests{display:grid;gap:10px}
+.summary-test{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px;border:1px solid rgba(212,169,78,.17);background:linear-gradient(145deg,rgba(35,27,22,.95),rgba(22,17,14,.95));border-radius:13px}
+.summary-test-title{font:400 1.05rem 'Staatliches';letter-spacing:.055em;color:var(--cream)}
+.summary-test-value{font-size:.76rem;color:var(--smoke);margin-top:3px}
+.summary-cat{min-width:72px;text-align:center;padding:8px 10px;border-radius:999px;font:600 .72rem 'Barlow';letter-spacing:.05em;border:1px solid var(--line)}
+.summary-cat.a{color:#86d8aa;border-color:rgba(76,175,125,.45);background:rgba(76,175,125,.09)}
+.summary-cat.b{color:var(--dorado-suave);background:rgba(212,169,78,.08)}
+.summary-cat.c,.summary-cat.na{color:#ff8d8d;border-color:rgba(224,82,82,.4);background:rgba(224,82,82,.08)}
+.summary-cat.pending{color:var(--humo)}
+.summary-empty{color:var(--humo);font-size:.76rem}
 </style>
 </head>
 <body>
@@ -228,6 +250,7 @@ input:focus,select:focus,textarea:focus{
 <div class="eval-roster"><div class="eval-roster-title">Personal del destacamento</div><div id="rosterPreview"></div></div>
 </div></section>
 <section id="testview" class="hidden"><button class="back" onclick="view('station')">← Pruebas</button><div class="card"><h2 id="testTitle"></h2><p id="testSub" class="sub"></p><div id="testContent"></div></div></section>
+<section id="personsummary" class="hidden"><button class="back" onclick="view('station')">← Personal</button><div class="card"><div id="personSummaryContent"></div></div></section>
 </main>
 <div id="msg" class="msg hidden"></div>
 
@@ -263,8 +286,31 @@ function selectStation(s){
  const total=ps.length*tests.length;
  document.getElementById('statDone').textContent=totalDone;
  document.getElementById('statPending').textContent=Math.max(0,total-totalDone);
- document.getElementById('rosterPreview').innerHTML=ps.length?ps.map((p,i)=>`<div class="roster-line"><span><b>${String(i+1).padStart(2,'0')}</b> · ${esc(p.nombre)}</span><span>${esc(p.grado||'')}</span></div>`).join(''):'<div class="sub">No hay funcionarios registrados.</div>';
+ document.getElementById('rosterPreview').innerHTML=ps.length?ps.map((p,i)=>`<div class="roster-line" role="button" tabindex="0" onclick="openPersonSummary('${p.id}')" onkeydown="if(event.key==='Enter')openPersonSummary('${p.id}')"><span><b>${String(i+1).padStart(2,'0')}</b> · ${esc(p.nombre)}</span><span>${esc(p.grado||'')}</span></div>`).join(''):'<div class="sub">No hay funcionarios registrados.</div>';
  view('station')
+}
+
+
+function openPersonSummary(id){
+ const p=data.people.find(x=>String(x.id)===String(id));if(!p)return;
+ const yr=new Date().getFullYear(),tests=['Flexibilidad','Core','Flexiones','Sentadilla','Yo-Yo'];
+ const rows=tests.map(t=>({test:t,result:data.results[yr+'|'+p.id+'|'+t]}));
+ const done=rows.filter(x=>x.result).length;
+ const pct=Math.round(done/tests.length*100);
+ const detail=(t,r)=>{
+   if(!r)return 'Sin evaluar';
+   if(t==='Core'||t==='Sentadilla')return r.segundos!==''&&r.segundos!=null?r.segundos+' segundos':'Resultado guardado';
+   if(t==='Flexiones')return r.repeticiones!==''&&r.repeticiones!=null?r.repeticiones+' repeticiones':'Resultado guardado';
+   if(t==='Yo-Yo')return r.metros!==''&&r.metros!=null?r.metros+' metros':'Resultado guardado';
+   return 'Evaluación registrada';
+ };
+ const catClass=c=>c==='A'?'a':c==='B'?'b':c==='C'?'c':c==='NO APTO'?'na':'pending';
+ document.getElementById('personSummaryContent').innerHTML=`
+  <div class="person-summary-head"><div><div class="eval-eyebrow">Resumen individual · ${yr}</div><div class="person-summary-name">${esc(p.nombre)}</div><div class="person-summary-meta">${esc(p.grado||'Sin grado')} · ${esc(p.destacamento||p.dest||'')}</div></div><div class="eval-year">${done}/5 PRUEBAS</div></div>
+  <div class="summary-progress"><div class="summary-progress-top"><span class="sub">Progreso de evaluación</span><b>${pct}%</b></div><div class="summary-bar"><i style="width:${pct}%"></i></div></div>
+  <div class="section">Resultados</div>
+  <div class="summary-tests">${rows.map(x=>{const r=x.result,c=r?(r.categoria||'PENDIENTE'):'PENDIENTE';return `<div class="summary-test"><div><div class="summary-test-title">${x.test}</div><div class="summary-test-value">${detail(x.test,r)}</div></div>${r?`<span class="summary-cat ${catClass(c)}">${esc(c==='PENDIENTE_TABLA'?'PENDIENTE':c)}</span>`:`<span class="summary-cat pending">PENDIENTE</span>`}</div>`}).join('')}</div>`;
+ view('personsummary');
 }
 
 function openTest(t){currentTest=t;timed={};stopTimer(true);document.getElementById('testTitle').textContent=t;document.getElementById('testSub').textContent=currentStation;view('testview');if(t==='Flexibilidad')renderFlex();else if(t==='Core'||t==='Sentadilla')renderTimed();else renderNumeric(t==='Yo-Yo'?'metros':'repeticiones')}
