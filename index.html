@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#082c5c">
+<title>Evaluaciones Físicas - Bomberos</title>
+<style>
+:root{--carbon:#16110E;--carbon2:#201914;--red:#C8272D;--red2:#8E1B20;--gold:#D4A94E;--gold2:#E6C77E;--cream:#F3EADB;--smoke:#9A8D7E;--line:rgba(212,169,78,.25);--ok:#4CAF7D;--err:#E05252}
+*{box-sizing:border-box}html{-webkit-tap-highlight-color:transparent}body{margin:0;min-height:100vh;background:var(--carbon);color:var(--cream);font-family:'Barlow',sans-serif;background-image:radial-gradient(ellipse at 50% -10%,rgba(200,39,45,.18),transparent 55%),radial-gradient(ellipse at 90% 100%,rgba(212,169,78,.06),transparent 50%)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+header{position:relative;text-align:center;padding:54px 16px 34px;overflow:hidden}
+header:before,header:after{content:"";position:absolute;left:-20%;right:-20%;transform:rotate(-3deg)}
+header:before{top:25px;height:10px;background:var(--red)}header:after{top:39px;height:3px;background:var(--gold)}
+.wrap{max-width:860px;margin:auto}.brand{display:flex;flex-direction:column;align-items:center;gap:7px}.logo{width:78px;height:78px;display:grid;place-items:center;border:2px solid var(--gold);border-radius:50%;font-size:34px;box-shadow:0 0 0 4px rgba(212,169,78,.15);background:var(--carbon2)}
+h1,h2,h3,.btn,.back,.test,.station{font-family:'Staatliches',sans-serif;font-weight:400;letter-spacing:.06em}
+h1{font-size:clamp(2.2rem,7vw,3.8rem);line-height:.95;margin:8px 0 2px;text-transform:uppercase}header p{margin:5px 0 0;color:var(--gold2);text-transform:uppercase;letter-spacing:.14em;font-size:.76rem}
+.main{max-width:860px;margin:auto;padding:0 20px 80px}.hidden{display:none!important}
+.card{background:var(--carbon2);border:1px solid var(--line);border-top:4px solid var(--red);padding:26px clamp(18px,5vw,36px);margin-bottom:15px}
+.card h2{font-size:1.55rem;color:var(--gold);margin:0 0 7px;text-transform:uppercase}.sub{font-size:.88rem;color:var(--smoke);line-height:1.45;margin:0 0 20px}
+.homebtn{width:100%;display:flex;align-items:center;gap:16px;text-align:left;background:var(--carbon2);border:1px solid var(--line);border-left:4px solid var(--red);color:var(--cream);padding:18px;margin-bottom:12px;transition:.15s}
+.homebtn:hover{border-color:var(--gold);transform:translateY(-1px)}.icon{width:52px;height:52px;display:grid;place-items:center;flex:none;background:var(--carbon);border:1px solid var(--line);font-size:25px}.homebtn strong{display:block;font:400 1.25rem 'Staatliches';letter-spacing:.07em;color:var(--gold2)}.homebtn small{display:block;color:var(--smoke);margin-top:3px}
+.back{background:var(--carbon);border:1px solid var(--line);color:var(--gold);padding:11px 15px;margin:0 0 12px;text-transform:uppercase}.back:hover{border-color:var(--gold)}
+.grid{display:grid;gap:14px}.section{font:400 1.05rem 'Staatliches';letter-spacing:.14em;color:var(--gold);display:flex;align-items:center;gap:12px;margin:24px 0 13px}.section:after{content:"";height:1px;background:var(--line);flex:1}
+.field label{display:block;font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;color:var(--smoke);margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:12px 14px;min-height:48px;background:var(--carbon);color:var(--cream);border:1px solid var(--line);outline:none;border-radius:0}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}.field textarea{min-height:90px;resize:vertical}
+.btn{padding:15px 22px;border:0;font-size:1.08rem;text-transform:uppercase}.primary{width:100%;margin-top:22px;background:linear-gradient(160deg,var(--red),var(--red2));color:var(--cream);border-bottom:4px solid var(--gold)}
+.stations{display:grid;gap:10px}.station{width:100%;display:flex;justify-content:space-between;align-items:center;background:var(--carbon);border:1px solid var(--line);color:var(--cream);padding:16px;text-align:left;font-size:1.05rem}.station:hover{border-color:var(--gold)}.badge{font-family:'Barlow';font-size:.72rem;font-weight:700;color:var(--gold2);border:1px solid var(--line);padding:5px 9px}
+.tests{display:grid;grid-template-columns:1fr 1fr;gap:10px}.test{min-height:105px;background:var(--carbon);border:1px solid var(--line);color:var(--cream);font-size:1rem;text-transform:uppercase}.test:hover{border-color:var(--gold)}.test span{display:block;font-size:26px;margin-bottom:8px}
+.person{background:var(--carbon);border:1px solid var(--line);padding:14px;margin-bottom:10px}.name{font-weight:700;color:var(--cream)}.meta{font-size:.75rem;color:var(--smoke);margin-top:4px}.scores{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.score{padding:11px 4px;border:1px solid var(--line);background:var(--carbon2);color:var(--cream);font-weight:700}.score:hover{border-color:var(--gold)}.a{color:#8fe0ae}.b{color:var(--gold2)}.c{color:#f1ad6d}.na{color:#ef8585;border-color:rgba(224,82,82,.45)}
+.timer{text-align:center;background:var(--carbon);border:1px solid var(--line);border-top:4px solid var(--red);padding:22px;margin-bottom:14px}.time{font:400 3.2rem 'Staatliches';color:var(--gold2);letter-spacing:.05em;font-variant-numeric:tabular-nums}.timerbuttons{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}.start{background:var(--ok);color:white}.reset{background:var(--red);color:white}.undo{background:var(--carbon2);border:1px solid var(--line);color:var(--gold2)}
+.tap{width:100%;text-align:left;padding:14px;background:var(--carbon);color:var(--cream);border:1px solid var(--line);margin-bottom:8px}.tap.done{border-color:var(--ok);background:rgba(76,175,125,.08)}
+.entry{display:grid;grid-template-columns:1fr 90px 76px;gap:7px;align-items:center;background:var(--carbon);border:1px solid var(--line);padding:10px;margin-bottom:8px}.entry input{width:100%;padding:10px;background:var(--carbon2);color:var(--cream);border:1px solid var(--line)}.save{height:42px;background:linear-gradient(160deg,var(--red),var(--red2));color:white;border:0;font-weight:700}
+.msg{position:fixed;bottom:18px;left:15px;right:15px;max-width:600px;margin:auto;padding:14px;color:#fff;font-weight:700;z-index:20;border:1px solid}.ok{background:#244f38;border-color:var(--ok)}.err{background:#612326;border-color:var(--err)}
+@media(min-width:650px){.grid.two{grid-template-columns:1fr 1fr}.stations{grid-template-columns:1fr 1fr}.tests{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:600px){header{padding-top:50px}.main{padding:0 12px 50px}.card{padding:22px 15px}.scores{grid-template-columns:1fr 1fr}.entry{grid-template-columns:1fr 76px 68px}.logo{width:68px;height:68px}}
+
+/* ===== PANEL OPERATIVO DEL EVALUADOR ===== */
+.eval-head{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:16px}
+.eval-eyebrow{font-family:'Staatliches',sans-serif;color:var(--gold);letter-spacing:.13em;font-size:.78rem;text-transform:uppercase}
+.eval-head h2{margin:3px 0 2px!important;color:var(--cream)!important;font-size:1.8rem!important}
+.eval-head h2:before{display:none!important}.eval-year{border:1px solid var(--line);background:var(--carbon);padding:10px 14px;text-align:center;color:var(--gold2);font-family:'Staatliches';letter-spacing:.08em}
+.eval-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 20px}.eval-stat{background:var(--carbon);border:1px solid var(--line);padding:13px;text-align:center}.eval-stat b{display:block;font:400 1.7rem 'Staatliches';color:var(--cream)}.eval-stat span{font-size:.65rem;color:var(--smoke);text-transform:uppercase;letter-spacing:.08em}
+.test{position:relative;padding:15px 8px}.test small{display:block;font:500 .68rem 'Barlow';color:var(--smoke);text-transform:none;letter-spacing:0;margin-top:5px}.test-progress{display:block;height:3px;background:rgba(212,169,78,.12);margin:10px 8px 0}.test-progress i{display:block;height:100%;background:var(--gold);width:0}
+.eval-roster{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}.eval-roster-title{font:400 1rem 'Staatliches';letter-spacing:.1em;color:var(--gold);margin-bottom:9px}.roster-line{display:flex;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px solid rgba(212,169,78,.12);font-size:.85rem}.roster-line span:last-child{color:var(--smoke);font-size:.72rem}
+.test-toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:13px}.test-toolbar input{width:100%;padding:11px 12px;background:var(--carbon);border:1px solid var(--line);color:var(--cream)}.counter-pill{display:flex;align-items:center;padding:0 12px;border:1px solid var(--line);color:var(--gold2);background:var(--carbon);font-size:.75rem;font-weight:700}
+@media(max-width:560px){.eval-head{grid-template-columns:1fr}.eval-year{justify-self:start}.eval-stats{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="wrap brand"><div class="logo">🔥</div><div><h1>Evaluaciones Físicas</h1><p>Bomberos · Evaluación anual</p></div></div></header>
+<main class="main">
+<section id="home">
+<div class="card"><h2>Bienvenido</h2><p class="sub">Sistema de registro y evaluación física anual.</p></div>
+<button class="homebtn" onclick="view('register')"><div class="icon">👨‍🚒</div><div><strong>Completar ficha de funcionario</strong><small>Datos personales, de salud y destacamento.</small></div></button>
+<button class="homebtn" onclick="openPanel()"><div class="icon">📋</div><div><strong>Panel del evaluador</strong><small>Seleccionar destacamento y registrar las pruebas.</small></div></button>
+</section>
+
+<section id="register" class="hidden">
+<button class="back" onclick="view('home')">← Volver</button>
+<div class="card"><h2>Ficha del funcionario</h2><p class="sub">Completá tus datos antes de la jornada.</p>
+<form id="form">
+<div class="section">Datos personales</div><div class="grid two">
+<div class="field"><label>Grado</label><input id="grado"></div>
+<div class="field"><label>Nombre y apellido *</label><input id="nombre" required></div>
+<div class="field"><label>Cédula de identidad *</label><input id="ci" required inputmode="numeric"></div>
+<div class="field"><label>Fecha de nacimiento *</label><input id="nacimiento" type="date" required></div>
+<div class="field"><label>Género *</label><select id="genero" required><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Otro</option></select></div>
+<div class="field"><label>Teléfono</label><input id="telefono" type="tel"></div>
+<div class="field"><label>Destacamento *</label><select id="destacamento" required><option value="">Seleccionar</option></select></div>
+<div class="field"><label>Fecha de ingreso</label><input id="ingreso" type="date"></div>
+</div>
+<div class="section">Información de salud</div><div class="grid two">
+<div class="field"><label>Carné de salud</label><select id="carne"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
+<div class="field"><label>Vencimiento carné</label><input id="vencCarne" type="date"></div>
+<div class="field"><label>Ergometría</label><select id="ergometria"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
+<div class="field"><label>Fecha ergometría</label><input id="fechaErgo" type="date"></div>
+</div>
+<div class="field" style="margin-top:13px"><label>Antecedentes relevantes</label><textarea id="antecedentes"></textarea></div>
+<div class="field" style="margin-top:13px"><label>Lesiones, limitaciones o rehabilitación</label><textarea id="lesiones"></textarea></div>
+<button class="btn primary" type="submit">Guardar ficha</button>
+</form></div></section>
+
+<section id="stations" class="hidden"><button class="back" onclick="view('home')">← Volver</button><div class="card"><h2>Panel del evaluador</h2><p class="sub">Seleccioná el destacamento.</p><div id="stationList" class="stations"></div></div></section>
+<section id="station" class="hidden"><button class="back" onclick="view('stations')">← Destacamentos</button><div class="card">
+<div class="eval-head"><div><div class="eval-eyebrow">Panel operativo · Evaluador</div><h2 id="stationTitle"></h2><p id="stationCount" class="sub"></p></div><div class="eval-year" id="evalYear"></div></div>
+<div class="eval-stats"><div class="eval-stat"><b id="statPeople">0</b><span>Funcionarios</span></div><div class="eval-stat"><b id="statDone">0</b><span>Registros</span></div><div class="eval-stat"><b id="statPending">0</b><span>Pendientes</span></div></div>
+<div class="section">Pruebas físicas</div><div class="tests">
+<button class="test" onclick="openTest('Flexibilidad')"><span>🧘</span>Flexibilidad<small>A · B · C · No apto</small><span class="test-progress"><i id="prog-Flexibilidad"></i></span></button><button class="test" onclick="openTest('Core')"><span>⏱️</span>Core<small>Cronómetro grupal</small><span class="test-progress"><i id="prog-Core"></i></span></button><button class="test" onclick="openTest('Flexiones')"><span>💪</span>Flexiones<small>Carga de repeticiones</small><span class="test-progress"><i id="prog-Flexiones"></i></span></button><button class="test" onclick="openTest('Sentadilla')"><span>🦵</span>Sentadilla<small>Cronómetro grupal</small><span class="test-progress"><i id="prog-Sentadilla"></i></span></button><button class="test" onclick="openTest('Yo-Yo')"><span>🏃</span>Yo-Yo<small>Distancia en metros</small><span class="test-progress"><i id="prog-Yo-Yo"></i></span></button>
+</div>
+<div class="eval-roster"><div class="eval-roster-title">Personal del destacamento</div><div id="rosterPreview"></div></div>
+</div></section>
+<section id="testview" class="hidden"><button class="back" onclick="view('station')">← Pruebas</button><div class="card"><h2 id="testTitle"></h2><p id="testSub" class="sub"></p><div id="testContent"></div></div></section>
+</main>
+<div id="msg" class="msg hidden"></div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxfwGdnwVyRGZFl957vK95vgw0p-i8RqRpXYKlokRMJE7pJS6F0u0OEDNK8yTzzXRPlQA/exec";
+const DEST=['Minas','Lascano','J.P. Varela','Treinta y Tres','Vergara','Río Branco','Melo','Fraile Muerto','Santa Clara'];
+let data={people:[],results:{}},currentStation='',currentTest='',timerStart=0,timerInterval=null,timerRunning=false,timed={};
+
+document.addEventListener('DOMContentLoaded',()=>{const s=document.getElementById('destacamento');DEST.forEach(x=>s.add(new Option(x,x)));document.getElementById('form').addEventListener('submit',register)});
+
+function view(id){document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');window.scrollTo(0,0)}
+async function api(action,d={}){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:action,data:d})});const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw Error('Apps Script no devolvió JSON. Revisá permisos de la implementación.')}if(j.ok===false)throw Error(j.error||'Error del servidor');return j}
+function val(id){return document.getElementById(id).value.trim()}
+function message(t,ok=true){const m=document.getElementById('msg');m.textContent=t;m.className='msg '+(ok?'ok':'err');setTimeout(()=>m.classList.add('hidden'),3000)}
+async function register(e){e.preventDefault();const b=e.submitter;b.disabled=true;b.textContent='Guardando...';try{await api('registrarFuncionario',{grado:val('grado'),nombre:val('nombre'),ci:val('ci'),nacimiento:val('nacimiento'),genero:val('genero'),telefono:val('telefono'),destacamento:val('destacamento'),ingreso:val('ingreso'),carne:val('carne'),vencCarne:val('vencCarne'),ergometria:val('ergometria'),fechaErgo:val('fechaErgo'),antecedentes:val('antecedentes'),lesiones:val('lesiones')});message('Ficha guardada correctamente');e.target.reset();setTimeout(()=>view('home'),800)}catch(x){message(x.message,false)}finally{b.disabled=false;b.textContent='Guardar ficha'}}
+
+async function openPanel(){view('stations');document.getElementById('stationList').innerHTML='Cargando...';try{const r=await api('cargarPanel');data.people=r.people||[];data.results=r.results||{};renderStations()}catch(e){document.getElementById('stationList').innerHTML=e.message}}
+function people(){return data.people.filter(p=>(p.destacamento||p.dest)===currentStation)}
+function renderStations(){document.getElementById('stationList').innerHTML=DEST.map(s=>`<button class="station" onclick="selectStation('${s}')"><strong>${s}</strong><span class="badge">${data.people.filter(p=>(p.destacamento||p.dest)===s).length} funcionarios</span></button>`).join('')}
+function selectStation(s){
+ currentStation=s;const ps=people(),yr=new Date().getFullYear();
+ document.getElementById('stationTitle').textContent=s;
+ document.getElementById('stationCount').textContent='Destacamento seleccionado · '+ps.length+' funcionarios registrados';
+ document.getElementById('evalYear').textContent='EVALUACIÓN '+yr;
+ document.getElementById('statPeople').textContent=ps.length;
+ const tests=['Flexibilidad','Core','Flexiones','Sentadilla','Yo-Yo'];
+ let totalDone=0;
+ tests.forEach(t=>{
+   let done=ps.filter(p=>data.results[yr+'|'+p.id+'|'+t]).length;
+   totalDone+=done;
+   const bar=document.getElementById('prog-'+t);if(bar)bar.style.width=(ps.length?Math.round(done/ps.length*100):0)+'%';
+ });
+ const total=ps.length*tests.length;
+ document.getElementById('statDone').textContent=totalDone;
+ document.getElementById('statPending').textContent=Math.max(0,total-totalDone);
+ document.getElementById('rosterPreview').innerHTML=ps.length?ps.map((p,i)=>`<div class="roster-line"><span><b>${String(i+1).padStart(2,'0')}</b> · ${esc(p.nombre)}</span><span>${esc(p.grado||'')}</span></div>`).join(''):'<div class="sub">No hay funcionarios registrados.</div>';
+ view('station')
+}
+
+function openTest(t){currentTest=t;timed={};stopTimer(true);document.getElementById('testTitle').textContent=t;document.getElementById('testSub').textContent=currentStation;view('testview');if(t==='Flexibilidad')renderFlex();else if(t==='Core'||t==='Sentadilla')renderTimed();else renderNumeric(t==='Yo-Yo'?'metros':'repeticiones')}
+function renderFlex(){document.getElementById('testContent').innerHTML=people().map(p=>`<div class="person"><div class="name">${esc(p.nombre)}</div><div class="meta">${esc(p.grado||'')}</div><div class="scores"><button class="score a" onclick="cat('${p.id}','A')">A</button><button class="score b" onclick="cat('${p.id}','B')">B</button><button class="score c" onclick="cat('${p.id}','C')">C</button><button class="score na" onclick="cat('${p.id}','NO APTO')">NO APTO</button></div></div>`).join('')||'No hay funcionarios.'}
+async function cat(id,c){try{await save({funcionarioId:id,prueba:currentTest,categoria:c});message('Guardado: '+c)}catch(e){message(e.message,false)}}
+
+function renderTimed(){document.getElementById('testContent').innerHTML=`<div class="timer"><div id="timerValue" class="time">00:00.0</div><div class="timerbuttons"><button class="btn start" onclick="startTimer()">Iniciar</button><button class="btn undo" onclick="undoTimed()">Deshacer</button><button class="btn reset" onclick="stopTimer(true)">Reiniciar</button></div></div><div>${people().map(p=>`<button id="t-${p.id}" class="tap" onclick="finishTimed('${p.id}')"><strong>${esc(p.nombre)}</strong><div class="meta">Tocar cuando finalice</div></button>`).join('')}</div>`}
+function startTimer(){if(timerRunning)return;timerStart=performance.now();timerRunning=true;timerInterval=setInterval(()=>{const e=document.getElementById('timerValue');if(e)e.textContent=format((performance.now()-timerStart)/1000)},100)}
+function stopTimer(reset){clearInterval(timerInterval);timerRunning=false;if(reset){const e=document.getElementById('timerValue');if(e)e.textContent='00:00.0'}}
+async function finishTimed(id){if(!timerRunning||timed[id])return;const sec=Number(((performance.now()-timerStart)/1000).toFixed(1));timed[id]={seconds:sec,order:Date.now()};const b=document.getElementById('t-'+id);b.classList.add('done');b.querySelector('.meta').textContent=sec+' segundos';try{await save({funcionarioId:id,prueba:currentTest,segundos:sec,categoria:'PENDIENTE_TABLA'})}catch(e){message(e.message,false)}}
+function undoTimed(){const a=Object.entries(timed).sort((x,y)=>y[1].order-x[1].order);if(!a.length)return;const id=a[0][0];delete timed[id];const b=document.getElementById('t-'+id);if(b){b.classList.remove('done');b.querySelector('.meta').textContent='Tocar cuando finalice'}message('Último registro deshecho')}
+
+function renderNumeric(type){const unit=type==='metros'?'m':'rep';document.getElementById('testContent').innerHTML=people().map(p=>`<div class="entry"><div><div class="name">${esc(p.nombre)}</div><div class="meta">${unit}</div></div><input id="${type}-${p.id}" type="number" min="0" inputmode="numeric"><button class="save" onclick="saveNum('${p.id}','${type}')">Guardar</button></div><button class="score na" style="width:100%;margin-bottom:12px" onclick="cat('${p.id}','NO APTO')">NO APTO</button>`).join('')||'No hay funcionarios.'}
+async function saveNum(id,type){const el=document.getElementById(type+'-'+id);if(el.value===''||Number(el.value)<0){message('Ingresá un valor válido',false);return}const d={funcionarioId:id,prueba:currentTest,categoria:'PENDIENTE_TABLA'};d[type]=Number(el.value);try{await save(d);message('Resultado guardado')}catch(e){message(e.message,false)}}
+async function save(d){d.anio=new Date().getFullYear();return api('guardarResultado',d)}
+function format(s){const m=Math.floor(s/60),x=Math.floor(s%60),d=Math.floor((s%1)*10);return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')+'.'+d}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+</script>
+</body>
+</html>
