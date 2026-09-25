@@ -273,6 +273,10 @@ h1,.hero-title{font-weight:800!important}
   font-family:'Montserrat','Barlow',sans-serif!important;
   font-weight:700!important;
 }
+
+/* ===== EDAD AUTOMÁTICA ===== */
+.age-live{margin-top:7px;display:flex;align-items:center;gap:7px;color:var(--gold2);font-size:.76rem;font-weight:700}
+.age-live:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
 </style>
 </head>
 <body>
@@ -313,7 +317,7 @@ h1,.hero-title{font-weight:800!important}
 <div class="field"><label>Grado</label><input id="grado"></div>
 <div class="field"><label>Nombre y apellido *</label><input id="nombre" required></div>
 <div class="field"><label>Cédula de identidad *</label><input id="ci" required inputmode="numeric"></div>
-<div class="field"><label>Fecha de nacimiento *</label><input id="nacimiento" type="date" required></div>
+<div class="field"><label>Fecha de nacimiento *</label><input id="nacimiento" type="date" required><div id="edadLive" class="age-live">Ingresá la fecha para calcular la edad</div></div>
 <div class="field"><label>Género *</label><select id="genero" required><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Otro</option></select></div>
 <div class="field"><label>Teléfono</label><input id="telefono" type="tel"></div>
 <div class="field"><label>Destacamento *</label><select id="destacamento" required><option value="">Seleccionar</option></select></div>
@@ -381,6 +385,26 @@ function selectStation(s){
 }
 
 
+
+function calcularEdadCliente(fecha){
+ if(!fecha)return '';
+ const m=String(fecha).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+ const n=m?new Date(Number(m[1]),Number(m[2])-1,Number(m[3])):new Date(fecha);
+ if(isNaN(n.getTime()))return '';
+ const h=new Date();let e=h.getFullYear()-n.getFullYear();
+ const md=h.getMonth()-n.getMonth();
+ if(md<0||(md===0&&h.getDate()<n.getDate()))e--;
+ return e>=0?e:'';
+}
+function actualizarEdadLive(){
+ const el=document.getElementById('nacimiento'),out=document.getElementById('edadLive');
+ if(!el||!out)return;
+ const edad=calcularEdadCliente(el.value);
+ out.textContent=edad===''?'Ingresá la fecha para calcular la edad':'Edad actual: '+edad+' años';
+}
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='nacimiento')actualizarEdadLive()});
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='nacimiento')actualizarEdadLive()});
+
 function openPersonSummary(id){
  const p=data.people.find(x=>String(x.id)===String(id));if(!p)return;
  const yr=new Date().getFullYear(),tests=['Flexibilidad','Core','Flexiones','Sentadilla','Yo-Yo'];
@@ -401,6 +425,7 @@ function openPersonSummary(id){
    <div class="info-item"><b>Nombre</b><span>${show(p.nombre)}</span></div>
    <div class="info-item"><b>CI</b><span>${show(p.ci)}</span></div>
    <div class="info-item"><b>Fecha de nacimiento</b><span>${show(p.nacimiento)}</span></div>
+   <div class="info-item"><b>Edad actual</b><span>${p.nacimiento?calcularEdadCliente(p.nacimiento)+' años':'—'}</span></div>
    <div class="info-item"><b>Género</b><span>${show(p.genero)}</span></div>
    <div class="info-item"><b>Teléfono</b><span>${show(p.telefono)}</span></div>
    <div class="info-item"><b>Grado</b><span>${show(p.grado)}</span></div>
