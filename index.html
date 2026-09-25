@@ -277,6 +277,10 @@ h1,.hero-title{font-weight:800!important}
 /* ===== EDAD AUTOMÁTICA ===== */
 .age-live{margin-top:7px;display:flex;align-items:center;gap:7px;color:var(--gold2);font-size:.76rem;font-weight:700}
 .age-live:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
+
+.export-box{margin:18px 0;padding:15px;border:1px solid rgba(212,169,78,.20);border-radius:13px;background:var(--carbon)}
+.export-box p{margin:0 0 10px;color:var(--smoke);font-size:.76rem;line-height:1.4}
+.export-btn{width:100%;padding:13px 15px;border:1px solid rgba(212,169,78,.42);border-radius:11px;background:linear-gradient(145deg,rgba(212,169,78,.13),rgba(200,39,45,.10));color:var(--gold2);font-weight:700}
 </style>
 </head>
 <body>
@@ -341,6 +345,7 @@ h1,.hero-title{font-weight:800!important}
 <div class="section">Pruebas físicas</div><div class="tests">
 <button class="test" onclick="openTest('Flexibilidad')"><span>🧘</span>Flexibilidad<small>A · B · C · No apto</small><span class="test-progress"><i id="prog-Flexibilidad"></i></span></button><button class="test" onclick="openTest('Core')"><span>⏱️</span>Core<small>Cronómetro grupal</small><span class="test-progress"><i id="prog-Core"></i></span></button><button class="test" onclick="openTest('Flexiones')"><span>💪</span>Flexiones<small>Carga de repeticiones</small><span class="test-progress"><i id="prog-Flexiones"></i></span></button><button class="test" onclick="openTest('Sentadilla')"><span>🦵</span>Sentadilla<small>Cronómetro grupal</small><span class="test-progress"><i id="prog-Sentadilla"></i></span></button><button class="test" onclick="openTest('Yo-Yo')"><span>🏃</span>Yo-Yo<small>Distancia en metros</small><span class="test-progress"><i id="prog-Yo-Yo"></i></span></button>
 </div>
+<div class="export-box"><p>Generá un Excel anual con nombre, edad, género, destacamento y resultados de todas las pruebas.</p><button class="export-btn" onclick="generarExcel()">⬇ Generar Excel de resultados</button></div>
 <div class="eval-roster"><div class="eval-roster-title">Personal del destacamento</div><div id="rosterPreview"></div></div>
 </div></section>
 <section id="testview" class="hidden"><button class="back" onclick="view('station')">← Pruebas</button><div class="card"><h2 id="testTitle"></h2><p id="testSub" class="sub"></p><div id="testContent"></div></div></section>
@@ -484,6 +489,18 @@ async function save(d){
 }
 function format(s){const m=Math.floor(s/60),x=Math.floor(s%60),d=Math.floor((s%1)*10);return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')+'.'+d}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+
+async function generarExcel(){
+ try{
+   msg('Generando Excel...','ok');
+   const r=await api('generarExcel',{anio:new Date().getFullYear()});
+   const x=r.data||r;
+   if(!x.url)throw new Error('No se recibió el enlace del archivo.');
+   window.open(x.url,'_blank');
+   msg('Excel generado: '+x.filas+' funcionarios.','ok');
+ }catch(e){msg(e.message||String(e),'err')}
+}
+
 document.getElementById('homeYear').textContent='PERÍODO '+new Date().getFullYear();
 </script>
 </body>
