@@ -315,26 +315,54 @@ h1,.hero-title{font-weight:800!important}
 
 <section id="register" class="hidden">
 <button class="back" onclick="view('home')">← Volver</button>
-<div class="card"><h2 class="screen-title">Ficha del funcionario</h2><p class="sub">Completá tus datos antes de la jornada.</p>
-<form id="form">
-<div class="section">Datos personales</div><div class="grid two">
+<div class="card">
+<h2 class="screen-title">Ficha del funcionario</h2>
+<p class="sub">Completá los datos personales, de salud y composición corporal.</p>
+<form onsubmit="register(event)">
+<div class="section">Datos personales</div>
+<div class="grid two">
 <div class="field"><label>Grado</label><input id="grado"></div>
 <div class="field"><label>Nombre y apellido *</label><input id="nombre" required></div>
-<div class="field"><label>Cédula de identidad *</label><input id="ci" required inputmode="numeric"></div>
+<div class="field"><label>C.I. *</label><input id="ci" inputmode="numeric" required></div>
+<div class="field"><label>Fecha actual</label><input id="fechaActual" type="date" disabled></div>
 <div class="field"><label>Fecha de nacimiento *</label><input id="nacimiento" type="date" required><div id="edadLive" class="age-live">Ingresá la fecha para calcular la edad</div></div>
-<div class="field"><label>Género *</label><select id="genero" required><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Otro</option></select></div>
+<div class="field"><label>Género *</label><select id="genero" required><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option></select></div>
 <div class="field"><label>Teléfono</label><input id="telefono" type="tel"></div>
-<div class="field"><label>Destacamento *</label><select id="destacamento" required><option value="">Seleccionar</option></select></div>
+<div class="field"><label>Dependencia / Destacamento *</label><select id="destacamento" required></select></div>
 <div class="field"><label>Fecha de ingreso</label><input id="ingreso" type="date"></div>
 </div>
-<div class="section">Información de salud</div><div class="grid two">
-<div class="field"><label>Carné de salud</label><select id="carne"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
-<div class="field"><label>Vencimiento carné</label><input id="vencCarne" type="date"></div>
+
+<div class="section">Planilla de control de salud</div>
+<div class="grid two">
+<div class="field"><label>Carné de salud vigente</label><select id="carne"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
+<div class="field"><label>Vencimiento</label><input id="vencCarne" type="date"></div>
 <div class="field"><label>Ergometría</label><select id="ergometria"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
-<div class="field"><label>Fecha ergometría</label><input id="fechaErgo" type="date"></div>
+<div class="field"><label>Fecha de realización</label><input id="fechaErgo" type="date"></div>
 </div>
-<div class="field" style="margin-top:13px"><label>Antecedentes relevantes</label><textarea id="antecedentes"></textarea></div>
-<div class="field" style="margin-top:13px"><label>Lesiones, limitaciones o rehabilitación</label><textarea id="lesiones"></textarea></div>
+
+<div class="section">Antecedentes de salud</div>
+<div class="grid two">
+<div class="field"><label>Enfermedades crónicas</label><select id="enfermedadCronica"><option value="">Seleccionar</option><option>Diabetes</option><option>Hipertensión</option><option>ASMA</option><option>Ninguna</option><option>Otros</option></select></div>
+<div class="field" id="cronicaOtroBox"><label>Otros — especificar</label><input id="enfermedadCronicaOtro"></div>
+<div class="field"><label>Presentó alguna enfermedad como</label><select id="enfermedadAntecedente"><option value="">Seleccionar</option><option>Cáncer</option><option>Cardiopatías</option><option>ACV</option><option>Ninguna</option><option>Otros</option></select></div>
+<div class="field" id="antecedenteOtroBox"><label>Otros — especificar</label><input id="enfermedadAntecedenteOtro"></div>
+</div>
+
+<div class="section">Lesiones y rehabilitación</div>
+<div class="grid two">
+<div class="field"><label>¿Presenta alguna lesión?</label><select id="presentaLesion"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
+<div class="field"><label>¿Cuál?</label><input id="lesionCual"></div>
+<div class="field"><label>¿Le afecta en su vida cotidiana o profesional?</label><select id="lesionAfecta"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
+<div class="field"><label>¿Qué tareas le impide realizar?</label><textarea id="tareasImpedidas"></textarea></div>
+<div class="field"><label>¿Realiza tratamiento de rehabilitación?</label><select id="rehabilitacion"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select></div>
+<div class="field"><label>Detalle de rehabilitación</label><textarea id="rehabilitacionDetalle"></textarea></div>
+</div>
+
+<div class="section">Composición corporal</div>
+<div class="grid two">
+<div class="field"><label>Peso (kg)</label><input id="peso" type="number" min="0" step="0.1"></div>
+<div class="field"><label>Altura (cm)</label><input id="altura" type="number" min="0" step="0.1"></div>
+</div>
 <button class="btn primary" type="submit">Guardar ficha</button>
 </form></div></section>
 
@@ -364,7 +392,7 @@ function view(id){document.querySelectorAll('main>section').forEach(x=>x.classLi
 async function api(action,d={}){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:action,data:d})});const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw Error('Apps Script no devolvió JSON. Revisá permisos de la implementación.')}if(j.ok===false)throw Error(j.error||'Error del servidor');return j}
 function val(id){return document.getElementById(id).value.trim()}
 function message(t,ok=true){const m=document.getElementById('msg');m.textContent=t;m.className='msg '+(ok?'ok':'err');setTimeout(()=>m.classList.add('hidden'),3000)}
-async function register(e){e.preventDefault();const b=e.submitter;b.disabled=true;b.textContent='Guardando...';try{await api('registrarFuncionario',{grado:val('grado'),nombre:val('nombre'),ci:val('ci'),nacimiento:val('nacimiento'),genero:val('genero'),telefono:val('telefono'),destacamento:val('destacamento'),ingreso:val('ingreso'),carne:val('carne'),vencCarne:val('vencCarne'),ergometria:val('ergometria'),fechaErgo:val('fechaErgo'),antecedentes:val('antecedentes'),lesiones:val('lesiones')});message('Ficha guardada correctamente');e.target.reset();setTimeout(()=>view('home'),800)}catch(x){message(x.message,false)}finally{b.disabled=false;b.textContent='Guardar ficha'}}
+async function register(e){e.preventDefault();const b=e.submitter;b.disabled=true;b.textContent='Guardando...';try{await api('registrarFuncionario',{grado:val('grado'),nombre:val('nombre'),ci:val('ci'),nacimiento:val('nacimiento'),genero:val('genero'),telefono:val('telefono'),destacamento:val('destacamento'),ingreso:val('ingreso'),carne:val('carne'),vencCarne:val('vencCarne'),ergometria:val('ergometria'),fechaErgo:val('fechaErgo'),enfermedadCronica:val('enfermedadCronica'),enfermedadCronicaOtro:val('enfermedadCronicaOtro'),enfermedadAntecedente:val('enfermedadAntecedente'),enfermedadAntecedenteOtro:val('enfermedadAntecedenteOtro'),presentaLesion:val('presentaLesion'),lesionCual:val('lesionCual'),lesionAfecta:val('lesionAfecta'),tareasImpedidas:val('tareasImpedidas'),rehabilitacion:val('rehabilitacion'),rehabilitacionDetalle:val('rehabilitacionDetalle'),peso:val('peso'),altura:val('altura')});message('Ficha guardada correctamente');e.target.reset();document.getElementById('fechaActual').value=new Date().toISOString().slice(0,10);actualizarEdadLive();setTimeout(()=>view('home'),800)}catch(x){message(x.message,false)}finally{b.disabled=false;b.textContent='Guardar ficha'}}
 
 async function openPanel(){view('stations');document.getElementById('stationList').innerHTML='Cargando...';try{const r=await api('cargarPanel');const panel=r.data||r;data.people=panel.people||[];data.results=panel.results||{};renderStations()}catch(e){document.getElementById('stationList').innerHTML=e.message}}
 function people(){return data.people.filter(p=>(p.destacamento||p.dest)===currentStation)}
@@ -440,8 +468,16 @@ function openPersonSummary(id){
    <div class="info-item"><b>Vencimiento carné</b><span>${show(p.vencCarne)}</span></div>
    <div class="info-item"><b>Ergometría</b><span>${show(p.ergometria)}</span></div>
    <div class="info-item"><b>Fecha ergometría</b><span>${show(p.fechaErgo)}</span></div>
-   <div class="info-item"><b>Antecedentes</b><span>${show(p.antecedentes)}</span></div>
-   <div class="info-item"><b>Lesiones / limitaciones</b><span>${show(p.lesiones)}</span></div>
+   <div class="info-item"><b>Enfermedad crónica</b><span>${show(p.enfermedadCronica)}${p.enfermedadCronicaOtro?' · '+show(p.enfermedadCronicaOtro):''}</span></div>
+   <div class="info-item"><b>Antecedente de enfermedad</b><span>${show(p.enfermedadAntecedente)}${p.enfermedadAntecedenteOtro?' · '+show(p.enfermedadAntecedenteOtro):''}</span></div>
+   <div class="info-item"><b>Presenta lesión</b><span>${show(p.presentaLesion)}</span></div>
+   <div class="info-item"><b>Lesión</b><span>${show(p.lesionCual)}</span></div>
+   <div class="info-item"><b>Afecta vida cotidiana/profesional</b><span>${show(p.lesionAfecta)}</span></div>
+   <div class="info-item"><b>Tareas impedidas</b><span>${show(p.tareasImpedidas)}</span></div>
+   <div class="info-item"><b>Rehabilitación</b><span>${show(p.rehabilitacion)}</span></div>
+   <div class="info-item"><b>Detalle rehabilitación</b><span>${show(p.rehabilitacionDetalle)}</span></div>
+   <div class="info-item"><b>Peso</b><span>${p.peso?show(p.peso)+' kg':'—'}</span></div>
+   <div class="info-item"><b>Altura</b><span>${p.altura?show(p.altura)+' cm':'—'}</span></div>
   </div></details>
   <div class="summary-progress"><div class="summary-progress-top"><span class="sub">Progreso de evaluación</span><b>${pct}%</b></div><div class="summary-bar"><i style="width:${pct}%"></i></div></div>
   <div class="section">Resultados</div>
