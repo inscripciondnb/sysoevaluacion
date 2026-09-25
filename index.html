@@ -204,20 +204,110 @@ input:focus,select:focus,textarea:focus{
 .summary-cat.c,.summary-cat.na{color:#ff8d8d;border-color:rgba(224,82,82,.4);background:rgba(224,82,82,.08)}
 .summary-cat.pending{color:var(--humo)}
 .summary-empty{color:var(--humo);font-size:.76rem}
+
+/* ===== DATOS PREVIOS + FICHA DESPLEGABLE ===== */
+.saved-note{color:var(--ok)!important;font-weight:600}
+.saved-result{border-color:rgba(76,175,125,.48)!important;background:rgba(76,175,125,.055)!important}
+.score.selected{outline:2px solid currentColor;outline-offset:2px;background:rgba(212,169,78,.10)}
+.info-details{margin:18px 0;border:1px solid var(--line);border-radius:13px;background:var(--carbon);overflow:hidden}
+.info-details summary{cursor:pointer;list-style:none;padding:15px 16px;font:400 1rem 'Staatliches';letter-spacing:.08em;color:var(--gold2);display:flex;justify-content:space-between;align-items:center}
+.info-details summary::-webkit-details-marker{display:none}
+.info-details summary:after{content:"＋";color:var(--gold)}
+.info-details[open] summary:after{content:"−"}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(212,169,78,.12);border-top:1px solid var(--line)}
+.info-item{background:var(--carbon2);padding:12px 14px;min-height:64px}
+.info-item b{display:block;color:var(--smoke);font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.info-item span{font-size:.82rem;color:var(--cream);word-break:break-word}
+@media(max-width:600px){.info-grid{grid-template-columns:1fr}}
+
+/* ===== PORTADA INSTITUCIONAL + COHERENCIA VISUAL ===== */
+.app-shell{position:relative}
+.hero-home{
+  position:relative;overflow:hidden;margin-bottom:16px;padding:34px clamp(20px,5vw,42px);
+  border:1px solid rgba(212,169,78,.24);border-top:4px solid var(--red);border-radius:20px;
+  background:
+    radial-gradient(circle at 84% 20%,rgba(200,39,45,.22),transparent 30%),
+    linear-gradient(135deg,rgba(40,30,24,.98),rgba(20,16,13,.98));
+  box-shadow:var(--shadow);
+}
+.hero-home:before{content:"";position:absolute;width:260px;height:260px;border:1px solid rgba(212,169,78,.10);border-radius:50%;right:-95px;top:-110px;box-shadow:0 0 0 28px rgba(212,169,78,.025),0 0 0 58px rgba(200,39,45,.025)}
+.hero-kicker{font:400 .8rem 'Staatliches';letter-spacing:.18em;color:var(--gold);text-transform:uppercase}
+.hero-title{font:400 clamp(2.1rem,7vw,4rem)/.95 'Staatliches';letter-spacing:.035em;text-transform:uppercase;color:var(--cream);max-width:700px;margin:9px 0 10px}
+.hero-copy{max-width:600px;color:var(--smoke);font-size:.92rem;line-height:1.55;margin:0}
+.hero-chip{display:inline-flex;align-items:center;gap:7px;margin-top:20px;padding:7px 11px;border:1px solid rgba(76,175,125,.35);border-radius:999px;background:rgba(76,175,125,.07);color:#8fd9ad;font-size:.69rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.hero-chip:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(76,175,125,.10)}
+.home-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.home-action{
+  position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;text-align:left;
+  min-height:210px;padding:24px;border:1px solid rgba(212,169,78,.22);border-radius:18px;
+  background:linear-gradient(150deg,rgba(34,26,21,.98),rgba(20,16,13,.98));color:var(--cream);
+  box-shadow:var(--shadow-soft);transition:.18s ease;
+}
+.home-action:hover{transform:translateY(-3px);border-color:rgba(212,169,78,.58);box-shadow:0 16px 36px rgba(0,0,0,.28)}
+.home-action:after{content:"→";position:absolute;right:22px;bottom:18px;font:400 1.7rem 'Staatliches';color:var(--gold)}
+.home-action .icon{width:58px;height:58px;margin-bottom:25px;border-radius:16px;background:linear-gradient(145deg,rgba(200,39,45,.17),rgba(212,169,78,.05));border-color:rgba(212,169,78,.28)}
+.home-action strong{font:400 1.45rem 'Staatliches';letter-spacing:.06em;color:var(--gold2);text-transform:uppercase}
+.home-action small{display:block;max-width:310px;color:var(--smoke);font-size:.8rem;line-height:1.45;margin-top:7px}
+.home-foot{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-top:18px;padding:0 4px;color:var(--smoke);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em}
+.screen-title{display:flex;align-items:center;gap:10px}.screen-title:before{content:"";width:4px;height:24px;border-radius:99px;background:linear-gradient(var(--red),var(--gold))}
+#register .card,#stations .card,#station .card,#testview .card,#personsummary .card{background:linear-gradient(155deg,rgba(32,25,20,.98),rgba(24,19,16,.98))}
+@media(max-width:680px){
+ .hero-home{padding:27px 19px;border-radius:16px}
+ .hero-title{font-size:2.55rem}
+ .home-actions{grid-template-columns:1fr}
+ .home-action{min-height:165px;padding:20px}
+ .home-action .icon{margin-bottom:17px}
+ .home-foot{flex-direction:column;align-items:flex-start}
+}
+
+/* ===== TIPOGRAFÍA DE TÍTULOS ===== */
+h1,h2,h3,
+.hero-title,.home-action strong,.person-summary-name,
+.eval-head h2,.summary-test-title,.screen-title{
+  font-family:'Montserrat','Barlow',sans-serif!important;
+  font-weight:700!important;
+  letter-spacing:.025em!important;
+}
+h1,.hero-title{font-weight:800!important}
+.hero-kicker,.eval-eyebrow,.section,.eval-year{
+  font-family:'Montserrat','Barlow',sans-serif!important;
+  font-weight:700!important;
+}
 </style>
 </head>
 <body>
 <header><div class="wrap brand"><div class="logo">🔥</div><div><h1>Evaluaciones Físicas</h1><p>Bomberos · Evaluación anual</p></div></div></header>
 <main class="main">
-<section id="home">
-<div class="card"><h2>Bienvenido</h2><p class="sub">Sistema de registro y evaluación física anual.</p></div>
-<button class="homebtn" onclick="view('register')"><div class="icon">👨‍🚒</div><div><strong>Completar ficha de funcionario</strong><small>Datos personales, de salud y destacamento.</small></div></button>
-<button class="homebtn" onclick="openPanel()"><div class="icon">📋</div><div><strong>Panel del evaluador</strong><small>Seleccionar destacamento y registrar las pruebas.</small></div></button>
+<section id="home" class="app-shell">
+  <div class="hero-home">
+    <div class="hero-kicker">Dirección Nacional de Bomberos · Evaluación anual</div>
+    <div class="hero-title">Evaluaciones físicas</div>
+    <p class="hero-copy">Registro centralizado de funcionarios y evaluación de aptitud física por destacamento.</p>
+    <div class="hero-chip">Sistema operativo</div>
+  </div>
+
+  <div class="home-actions">
+    <button class="home-action" onclick="view('register')">
+      <div class="icon">👨‍🚒</div>
+      <strong>Ficha del funcionario</strong>
+      <small>Registrar datos personales, información de salud y destacamento antes de la evaluación.</small>
+    </button>
+    <button class="home-action" onclick="openPanel()">
+      <div class="icon">📋</div>
+      <strong>Panel del evaluador</strong>
+      <small>Ingresar por destacamento, realizar las cinco pruebas y consultar resultados individuales.</small>
+    </button>
+  </div>
+
+  <div class="home-foot">
+    <span>Evaluación física anual</span>
+    <span id="homeYear"></span>
+  </div>
 </section>
 
 <section id="register" class="hidden">
 <button class="back" onclick="view('home')">← Volver</button>
-<div class="card"><h2>Ficha del funcionario</h2><p class="sub">Completá tus datos antes de la jornada.</p>
+<div class="card"><h2 class="screen-title">Ficha del funcionario</h2><p class="sub">Completá tus datos antes de la jornada.</p>
 <form id="form">
 <div class="section">Datos personales</div><div class="grid two">
 <div class="field"><label>Grado</label><input id="grado"></div>
@@ -240,7 +330,7 @@ input:focus,select:focus,textarea:focus{
 <button class="btn primary" type="submit">Guardar ficha</button>
 </form></div></section>
 
-<section id="stations" class="hidden"><button class="back" onclick="view('home')">← Volver</button><div class="card"><h2>Panel del evaluador</h2><p class="sub">Seleccioná el destacamento.</p><div id="stationList" class="stations"></div></div></section>
+<section id="stations" class="hidden"><button class="back" onclick="view('home')">← Volver</button><div class="card"><h2 class="screen-title">Panel del evaluador</h2><p class="sub">Seleccioná el destacamento.</p><div id="stationList" class="stations"></div></div></section>
 <section id="station" class="hidden"><button class="back" onclick="view('stations')">← Destacamentos</button><div class="card">
 <div class="eval-head"><div><div class="eval-eyebrow">Panel operativo · Evaluador</div><h2 id="stationTitle"></h2><p id="stationCount" class="sub"></p></div><div class="eval-year" id="evalYear"></div></div>
 <div class="eval-stats"><div class="eval-stat"><b id="statPeople">0</b><span>Funcionarios</span></div><div class="eval-stat"><b id="statDone">0</b><span>Registros</span></div><div class="eval-stat"><b id="statPending">0</b><span>Pendientes</span></div></div>
@@ -295,18 +385,34 @@ function openPersonSummary(id){
  const p=data.people.find(x=>String(x.id)===String(id));if(!p)return;
  const yr=new Date().getFullYear(),tests=['Flexibilidad','Core','Flexiones','Sentadilla','Yo-Yo'];
  const rows=tests.map(t=>({test:t,result:data.results[yr+'|'+p.id+'|'+t]}));
- const done=rows.filter(x=>x.result).length;
- const pct=Math.round(done/tests.length*100);
+ const done=rows.filter(x=>x.result).length,pct=Math.round(done/tests.length*100);
+ const show=v=>esc(v||'—');
  const detail=(t,r)=>{
    if(!r)return 'Sin evaluar';
    if(t==='Core'||t==='Sentadilla')return r.segundos!==''&&r.segundos!=null?r.segundos+' segundos':'Resultado guardado';
    if(t==='Flexiones')return r.repeticiones!==''&&r.repeticiones!=null?r.repeticiones+' repeticiones':'Resultado guardado';
-   if(t==='Yo-Yo')return r.metros!==''&&r.metros!=null?r.metros+' metros':'Resultado guardado';
+   if(t==='Yo-Yo')return r.metros!==''&&r.metros!=null?r.metros+' metros'+(r.nota!==''&&r.nota!=null?' · Nota '+r.nota:''):'Resultado guardado';
    return 'Evaluación registrada';
  };
  const catClass=c=>c==='A'?'a':c==='B'?'b':c==='C'?'c':c==='NO APTO'?'na':'pending';
  document.getElementById('personSummaryContent').innerHTML=`
-  <div class="person-summary-head"><div><div class="eval-eyebrow">Resumen individual · ${yr}</div><div class="person-summary-name">${esc(p.nombre)}</div><div class="person-summary-meta">${esc(p.grado||'Sin grado')} · ${esc(p.destacamento||p.dest||'')}</div></div><div class="eval-year">${done}/5 PRUEBAS</div></div>
+  <div class="person-summary-head"><div><div class="eval-eyebrow">Resumen individual · ${yr}</div><div class="person-summary-name">${esc(p.nombre)}</div><div class="person-summary-meta">${show(p.grado)} · ${show(p.destacamento||p.dest)}</div></div><div class="eval-year">${done}/5 PRUEBAS</div></div>
+  <details class="info-details"><summary>Ver ficha completa del funcionario</summary><div class="info-grid">
+   <div class="info-item"><b>Nombre</b><span>${show(p.nombre)}</span></div>
+   <div class="info-item"><b>CI</b><span>${show(p.ci)}</span></div>
+   <div class="info-item"><b>Fecha de nacimiento</b><span>${show(p.nacimiento)}</span></div>
+   <div class="info-item"><b>Género</b><span>${show(p.genero)}</span></div>
+   <div class="info-item"><b>Teléfono</b><span>${show(p.telefono)}</span></div>
+   <div class="info-item"><b>Grado</b><span>${show(p.grado)}</span></div>
+   <div class="info-item"><b>Destacamento</b><span>${show(p.destacamento||p.dest)}</span></div>
+   <div class="info-item"><b>Fecha de ingreso</b><span>${show(p.ingreso)}</span></div>
+   <div class="info-item"><b>Carné de salud</b><span>${show(p.carne)}</span></div>
+   <div class="info-item"><b>Vencimiento carné</b><span>${show(p.vencCarne)}</span></div>
+   <div class="info-item"><b>Ergometría</b><span>${show(p.ergometria)}</span></div>
+   <div class="info-item"><b>Fecha ergometría</b><span>${show(p.fechaErgo)}</span></div>
+   <div class="info-item"><b>Antecedentes</b><span>${show(p.antecedentes)}</span></div>
+   <div class="info-item"><b>Lesiones / limitaciones</b><span>${show(p.lesiones)}</span></div>
+  </div></details>
   <div class="summary-progress"><div class="summary-progress-top"><span class="sub">Progreso de evaluación</span><b>${pct}%</b></div><div class="summary-bar"><i style="width:${pct}%"></i></div></div>
   <div class="section">Resultados</div>
   <div class="summary-tests">${rows.map(x=>{const r=x.result,c=r?(r.categoria||'PENDIENTE'):'PENDIENTE';return `<div class="summary-test"><div><div class="summary-test-title">${x.test}</div><div class="summary-test-value">${detail(x.test,r)}</div></div>${r?`<span class="summary-cat ${catClass(c)}">${esc(c==='PENDIENTE_TABLA'?'PENDIENTE':c)}</span>`:`<span class="summary-cat pending">PENDIENTE</span>`}</div>`}).join('')}</div>`;
@@ -314,20 +420,46 @@ function openPersonSummary(id){
 }
 
 function openTest(t){currentTest=t;timed={};stopTimer(true);document.getElementById('testTitle').textContent=t;document.getElementById('testSub').textContent=currentStation;view('testview');if(t==='Flexibilidad')renderFlex();else if(t==='Core'||t==='Sentadilla')renderTimed();else renderNumeric(t==='Yo-Yo'?'metros':'repeticiones')}
-function renderFlex(){document.getElementById('testContent').innerHTML=people().map(p=>`<div class="person"><div class="name">${esc(p.nombre)}</div><div class="meta">${esc(p.grado||'')}</div><div class="scores"><button class="score a" onclick="cat('${p.id}','A')">A</button><button class="score b" onclick="cat('${p.id}','B')">B</button><button class="score c" onclick="cat('${p.id}','C')">C</button><button class="score na" onclick="cat('${p.id}','NO APTO')">NO APTO</button></div></div>`).join('')||'No hay funcionarios.'}
+function renderFlex(){
+ const yr=new Date().getFullYear();
+ document.getElementById('testContent').innerHTML=people().map(p=>{
+  const r=data.results[yr+'|'+p.id+'|Flexibilidad'],c=r?.categoria||'';
+  return `<div class="person ${r?'saved-result':''}"><div class="name">${esc(p.nombre)}</div><div class="meta ${r?'saved-note':''}">${r?'Guardado previamente: '+esc(c):esc(p.grado||'')}</div><div class="scores"><button class="score a ${c==='A'?'selected':''}" onclick="cat('${p.id}','A')">A</button><button class="score b ${c==='B'?'selected':''}" onclick="cat('${p.id}','B')">B</button><button class="score c ${c==='C'?'selected':''}" onclick="cat('${p.id}','C')">C</button><button class="score na ${c==='NO APTO'?'selected':''}" onclick="cat('${p.id}','NO APTO')">NO APTO</button></div></div>`;
+ }).join('')||'No hay funcionarios.';
+}
 async function cat(id,c){try{await save({funcionarioId:id,prueba:currentTest,categoria:c});message('Guardado: '+c)}catch(e){message(e.message,false)}}
 
-function renderTimed(){document.getElementById('testContent').innerHTML=`<div class="timer"><div id="timerValue" class="time">00:00.0</div><div class="timerbuttons"><button class="btn start" onclick="startTimer()">Iniciar</button><button class="btn undo" onclick="undoTimed()">Deshacer</button><button class="btn reset" onclick="stopTimer(true)">Reiniciar</button></div></div><div>${people().map(p=>`<button id="t-${p.id}" class="tap" onclick="finishTimed('${p.id}')"><strong>${esc(p.nombre)}</strong><div class="meta">Tocar cuando finalice</div></button>`).join('')}</div>`}
+function renderTimed(){
+ const yr=new Date().getFullYear();
+ document.getElementById('testContent').innerHTML=`<div class="timer"><div id="timerValue" class="time">00:00.0</div><div class="timerbuttons"><button class="btn start" onclick="startTimer()">Iniciar</button><button class="btn undo" onclick="undoTimed()">Deshacer</button><button class="btn reset" onclick="stopTimer(true)">Reiniciar</button></div></div><div>${people().map(p=>{
+   const r=data.results[yr+'|'+p.id+'|'+currentTest];
+   if(r&&r.segundos!==''&&r.segundos!=null)timed[p.id]={seconds:Number(r.segundos),order:0,previous:true};
+   return `<button id="t-${p.id}" class="tap ${r?'done saved-result':''}" onclick="finishTimed('${p.id}')"><strong>${esc(p.nombre)}</strong><div class="meta ${r?'saved-note':''}">${r&&r.segundos!==''&&r.segundos!=null?'Guardado: '+r.segundos+' segundos · tocar para reemplazar':'Tocar cuando finalice'}</div></button>`;
+  }).join('')}</div>`;
+}
 function startTimer(){if(timerRunning)return;timerStart=performance.now();timerRunning=true;timerInterval=setInterval(()=>{const e=document.getElementById('timerValue');if(e)e.textContent=format((performance.now()-timerStart)/1000)},100)}
 function stopTimer(reset){clearInterval(timerInterval);timerRunning=false;if(reset){const e=document.getElementById('timerValue');if(e)e.textContent='00:00.0'}}
-async function finishTimed(id){if(!timerRunning||timed[id])return;const sec=Number(((performance.now()-timerStart)/1000).toFixed(1));timed[id]={seconds:sec,order:Date.now()};const b=document.getElementById('t-'+id);b.classList.add('done');b.querySelector('.meta').textContent=sec+' segundos';try{await save({funcionarioId:id,prueba:currentTest,segundos:sec,categoria:'PENDIENTE_TABLA'})}catch(e){message(e.message,false)}}
+async function finishTimed(id){if(!timerRunning)return;const sec=Number(((performance.now()-timerStart)/1000).toFixed(1));timed[id]={seconds:sec,order:Date.now()};const b=document.getElementById('t-'+id);b.classList.add('done');b.querySelector('.meta').textContent=sec+' segundos';try{await save({funcionarioId:id,prueba:currentTest,segundos:sec,categoria:'PENDIENTE_TABLA'})}catch(e){message(e.message,false)}}
 function undoTimed(){const a=Object.entries(timed).sort((x,y)=>y[1].order-x[1].order);if(!a.length)return;const id=a[0][0];delete timed[id];const b=document.getElementById('t-'+id);if(b){b.classList.remove('done');b.querySelector('.meta').textContent='Tocar cuando finalice'}message('Último registro deshecho')}
 
-function renderNumeric(type){const unit=type==='metros'?'m':'rep';document.getElementById('testContent').innerHTML=people().map(p=>`<div class="entry"><div><div class="name">${esc(p.nombre)}</div><div class="meta">${unit}</div></div><input id="${type}-${p.id}" type="number" min="0" inputmode="numeric"><button class="save" onclick="saveNum('${p.id}','${type}')">Guardar</button></div><button class="score na" style="width:100%;margin-bottom:12px" onclick="cat('${p.id}','NO APTO')">NO APTO</button>`).join('')||'No hay funcionarios.'}
+function renderNumeric(type){
+ const unit=type==='metros'?'m':'rep',yr=new Date().getFullYear();
+ document.getElementById('testContent').innerHTML=people().map(p=>{
+  const r=data.results[yr+'|'+p.id+'|'+currentTest],v=r?(type==='metros'?r.metros:r.repeticiones):'';
+  return `<div class="entry ${r?'saved-result':''}"><div><div class="name">${esc(p.nombre)}</div><div class="meta ${r?'saved-note':''}">${r?'Valor guardado: '+esc(v)+' '+unit:unit}</div></div><input id="${type}-${p.id}" type="number" min="0" inputmode="numeric" value="${v!==''&&v!=null?esc(v):''}"><button class="save" onclick="saveNum('${p.id}','${type}')">${r?'Actualizar':'Guardar'}</button></div><button class="score na" style="width:100%;margin-bottom:12px" onclick="cat('${p.id}','NO APTO')">NO APTO</button>`;
+ }).join('')||'No hay funcionarios.';
+}
 async function saveNum(id,type){const el=document.getElementById(type+'-'+id);if(el.value===''||Number(el.value)<0){message('Ingresá un valor válido',false);return}const d={funcionarioId:id,prueba:currentTest,categoria:'PENDIENTE_TABLA'};d[type]=Number(el.value);try{await save(d);message('Resultado guardado')}catch(e){message(e.message,false)}}
-async function save(d){d.anio=new Date().getFullYear();return api('guardarResultado',d)}
+async function save(d){
+ d.anio=new Date().getFullYear();
+ const r=await api('guardarResultado',d),saved=(r.data||r);
+ const key=d.anio+'|'+d.funcionarioId+'|'+d.prueba;
+ data.results[key]={...(data.results[key]||{}),...d,...saved};
+ return saved;
+}
 function format(s){const m=Math.floor(s/60),x=Math.floor(s%60),d=Math.floor((s%1)*10);return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')+'.'+d}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+document.getElementById('homeYear').textContent='PERÍODO '+new Date().getFullYear();
 </script>
 </body>
 </html>
