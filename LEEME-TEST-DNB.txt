@@ -1,0 +1,18 @@
+TEST DNB — archivos finales
+
+1) Agregá portada-final.css junto al index.html.
+2) En <head>, después de tu <style> actual, agregá:
+   <link rel="stylesheet" href="portada-final.css">
+
+3) En tu JavaScript reemplazá el DOMContentLoaded actual por:
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const s=document.getElementById('destacamento');
+  DEST.forEach(x=>s.add(new Option(x,x)));
+  document.getElementById('fechaActual').value=new Date().toISOString().slice(0,10);
+  actualizarEdadLive();
+});
+
+IMPORTANTE:
+La franja blanca visible en la captura está dentro de test-dnb-logo.png.
+Para eliminarla totalmente hay que sustituir esa imagen por la versión recortada/sin margen blanco.
