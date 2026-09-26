@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   compartido-yoyo-audio-faltas-2026-09-26
+   yoyo-pitidos-reales-captura-18-2026-09-26
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -39,11 +39,20 @@ YO-YO TEST
 - Si el navegador del segundo teléfono bloquea la reproducción automática, debe tocar ACTIVAR AUDIO SINCRONIZADO; el audio se alinea con la sesión en curso.
 - En modo individual, INICIAR reproduce la pista y PAUSAR detiene tanto el audio como el avance del test.
 - En modo compartido no se permite que un solo evaluador pause o reinicie la pista para evitar desincronizar al compañero.
-- La introducción dura aproximadamente 2:27; la distancia comienza a contarse cuando empieza la carrera.
+- OMITIR INTRODUCCIÓN lleva directamente al comienzo de la carrera. En modo individual puede usarse incluso antes de pulsar INICIAR.
+- En modo compartido se habilita después del inicio de la sesión y antes de terminar la introducción; cualquiera de los evaluadores puede activarlo y ambos dispositivos saltan al mismo punto.
+- La introducción termina aproximadamente a los 2:27,22. El contador usa las marcas medidas de los pitidos del MP3, no intervalos teóricos constantes.
+- Se cuentan 221 recorridos de 20 m (máximo 4.420 m). La señal final de cierre no agrega otro recorrido.
+- El salto de introducción usa la marca audible del primer pitido.
 - La pantalla acompaña el audio continuo en recorridos de 20 m, desde 8,5 km/h y niveles progresivos.
 - El tiempo guardado corresponde solamente a la carrera y no incluye la introducción.
 - Primera falta: el funcionario continúa.
-- Segunda falta: se finaliza y guarda inmediatamente la última distancia completada para que ambos evaluadores vean el resultado.
+- Segunda falta: distancia, tiempo, nota y categoría aparecen al tocar el funcionario. El estado CAPTURADO / GUARDANDO indica que la planilla aún no confirmó; luego cambia a GUARDADO.
+- La tabla se aplica desde los 18 años. Los 18 y 19 años usan el primer tramo etario de la tabla cargada (hasta 29 años). Por debajo de 20 m se muestra Nota 0 / Categoría C.
+
+REGISTRO DEL FUNCIONARIO
+- Fecha de nacimiento ingresada como Día, Mes y Año separados; se valida la fecha real (por ejemplo, se rechaza 31/02).
+- Se guarda en formato ISO para calcular correctamente la edad y se muestra como DD/MM/AAAA en la ficha.
 
 ELIMINAR EVALUACIONES
 - Cada resultado guardado muestra ELIMINAR EVALUACIÓN ANTERIOR.

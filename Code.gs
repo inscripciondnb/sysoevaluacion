@@ -21,6 +21,7 @@
 
 
 const DB_PROPERTY = 'BOMBEROS_SPREADSHEET_ID';
+const YOYO_AUDIO_START_SECONDS = 147.22;
 
 
 
@@ -85,8 +86,8 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'compartido-yoyo-audio-faltas-2026-09-26',
-    acciones: ['confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion']
+    version: 'yoyo-pitidos-reales-captura-18-2026-09-26',
+    acciones: ['confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion']
 
   });
 
@@ -237,6 +238,11 @@ function doPost(e) {
       case 'anularFaltaYoyoCompartida':
         validarSesionEvaluador_(body.token);
         result = anularFaltaYoyoCompartida_(data);
+        break;
+
+      case 'omitirIntroduccionYoyoCompartida':
+        validarSesionEvaluador_(body.token);
+        result = omitirIntroduccionYoyoCompartida_(data);
         break;
 
       default:
@@ -551,7 +557,7 @@ function registrarFaltaYoyoCompartida_(data) {
     if (ses.estado !== 'ACTIVA') throw new Error('El Yo-Yo todavía no comenzó.');
     if (registro.estado !== 'EN_CURSO') throw new Error('Este funcionario ya finalizó la prueba.');
     const calculadoServidor = Math.max(0, (Date.now() - Number(ses.inicioMs)) / 1000);
-    if (calculadoServidor < 147.512) throw new Error('La carrera todavía no comenzó. Esperá el final de la introducción.');
+    if (calculadoServidor < YOYO_AUDIO_START_SECONDS) throw new Error('La carrera todavía no comenzó. Esperá el final de la introducción.');
     const faltas = Number(registro.faltas || 0) + 1;
     registro.faltas = faltas;
     registro.ultimaFaltaMs = Date.now();
@@ -560,12 +566,12 @@ function registrarFaltaYoyoCompartida_(data) {
       return {sesion:Object.assign({}, ses, {serverNow:Date.now()}), segundaFalta:false};
     }
     const capturado = Number(data.segundosCapturados);
-    segundosAudio = Number.isFinite(capturado) && capturado >= 147.512 && capturado <= calculadoServidor + 2
+    segundosAudio = Number.isFinite(capturado) && capturado >= YOYO_AUDIO_START_SECONDS && capturado <= calculadoServidor + 2
       ? capturado : calculadoServidor;
     metros = Math.max(0, Math.min(4420, Math.floor(Number(data.metrosCapturados || 0) / 20) * 20));
     registro.estado = 'GUARDANDO';
     registro.segundosAudio = Number(segundosAudio.toFixed(1));
-    registro.segundos = Number(Math.max(0, segundosAudio - 147.512).toFixed(1));
+    registro.segundos = Number(Math.max(0, segundosAudio - YOYO_AUDIO_START_SECONDS).toFixed(1));
     registro.metros = metros;
     sesId = ses.id;
     props.setProperty(key, JSON.stringify(ses));
@@ -575,7 +581,7 @@ function registrarFaltaYoyoCompartida_(data) {
   try {
     guardado = guardarResultado_({
       funcionarioId:id, prueba:'Yo-Yo', anio:Number(data.anio),
-      segundos:Number(Math.max(0, segundosAudio - 147.512).toFixed(1)), metros:metros
+      segundos:Number(Math.max(0, segundosAudio - YOYO_AUDIO_START_SECONDS).toFixed(1)), metros:metros
     });
   } catch (err) {
     const retryLock = LockService.getScriptLock(); retryLock.waitLock(10000);
@@ -615,6 +621,26 @@ function anularFaltaYoyoCompartida_(data) {
     if (!registro || registro.evaluador !== rol) throw new Error('Solo podés anular faltas de tus funcionarios.');
     if (ses.estado !== 'ACTIVA' || registro.estado !== 'EN_CURSO') throw new Error('La falta ya no puede modificarse.');
     registro.faltas = Math.max(0, Number(registro.faltas || 0) - 1);
+    props.setProperty(key, JSON.stringify(ses));
+    return Object.assign({}, ses, {serverNow:Date.now()});
+  } finally { lock.releaseLock(); }
+}
+
+function omitirIntroduccionYoyoCompartida_(data) {
+  if (valor_(data.prueba) !== 'Yo-Yo') throw new Error('Esta acción corresponde únicamente al Yo-Yo Test.');
+  const key = claveSesionCompartida_(data);
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties(), raw = props.getProperty(key);
+    if (!raw) throw new Error('No hay sesión compartida del Yo-Yo.');
+    const ses = JSON.parse(raw);
+    validarDueñoCompartido_(ses, data);
+    if (ses.estado !== 'ACTIVA') throw new Error('Primero iniciá la sesión compartida.');
+    const now = Date.now(), elapsed = (now - Number(ses.inicioMs)) / 1000;
+    if (elapsed >= YOYO_AUDIO_START_SECONDS) throw new Error('La carrera ya comenzó; no se puede omitir la introducción.');
+    ses.inicioMs = now - Math.round(YOYO_AUDIO_START_SECONDS * 1000);
+    ses.introduccionOmitidaMs = now;
+    ses.introduccionOmitidaPor = valor_(data.evaluador);
     props.setProperty(key, JSON.stringify(ses));
     return Object.assign({}, ses, {serverNow:Date.now()});
   } finally { lock.releaseLock(); }
@@ -873,6 +899,10 @@ function registrarFuncionario_(data) {
   if (!ci) throw new Error('Ingresá la CI.');
 
   if (!nacimiento) throw new Error('Ingresá la fecha de nacimiento.');
+  const partesNacimiento = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nacimiento);
+  if (!partesNacimiento) throw new Error('Ingresá día, mes y año de nacimiento válidos.');
+  const fechaNac = new Date(Number(partesNacimiento[1]), Number(partesNacimiento[2]) - 1, Number(partesNacimiento[3]));
+  if (fechaNac.getFullYear() !== Number(partesNacimiento[1]) || fechaNac.getMonth() !== Number(partesNacimiento[2]) - 1 || fechaNac.getDate() !== Number(partesNacimiento[3]) || fechaNac > new Date()) throw new Error('Fecha de nacimiento no válida.');
 
   if (!genero) throw new Error('Seleccioná el género.');
 
@@ -1581,7 +1611,7 @@ function clasificarPrueba_(prueba, r, genero, edad) {
 
     const e = Number(edad);
 
-    if (!isFinite(m) || !isFinite(e) || e < 20) return { categoria: '', nota: '' };
+    if (!isFinite(m) || !isFinite(e) || e < 18) return { categoria: '', nota: '' };
 
 
 
@@ -1611,7 +1641,7 @@ function clasificarPrueba_(prueba, r, genero, edad) {
 
     }
 
-    if (nota === 0) return { categoria: '', nota: '' };
+    if (nota === 0) return { categoria: 'C', nota: 0 };
 
 
 
