@@ -1,0 +1,15 @@
+EVALUACIONES FÍSICAS BOMBEROS — INSTALACIÓN COMPLETA
+
+Archivos:
+- index.html: página de la aplicación.
+- Code.gs: servidor de Google Apps Script.
+
+1. Abrí el proyecto de Apps Script que ya guarda los funcionarios y resultados. No crees otro proyecto: el proyecto existente conserva el vínculo con su planilla.
+2. En el editor, reemplazá el contenido del archivo de código actual por TODO el contenido de Code.gs. Guardá.
+3. Implementar > Administrar implementaciones > seleccioná la implementación web existente > Editar (lápiz) > Versión: Nueva versión > Implementar. Copiá su URL /exec.
+4. Verificá que esa URL sea la configurada en index.html, en la línea const API_URL. La URL entregada en este paquete termina en AKfycbxfwGdnwVyRGZFl957vK95vgw0p-i8RqRpXYKlokRMJE7pJS6F0u0OEDNK8yTzzXRPlQA/exec.
+5. Abrí la URL /exec en el navegador. Debe devolver JSON con version: sesiones-compartidas-2026-09-26. Si solo dice "API Evaluaciones Bomberos activa", sigue publicada la versión anterior.
+6. Subí index.html al repositorio de GitHub Pages y reemplazá el archivo anterior. Recargá la página. Si la PWA conserva una versión anterior, cerrala y volvé a abrirla o actualizá el navegador sin caché.
+7. En dos teléfonos, elegí el mismo destacamento y Core. El primero pulsa INICIAR / UNIRSE; el segundo pulsa INICIAR / UNIRSE. Ambos deben mostrar SESIÓN EN VIVO y el mismo tiempo. Repetí con Sentadilla. Yo-Yo tiene INICIAR, PAUSAR y REINICIAR propios.
+
+Si Apps Script continúa rechazando iniciarSesionCompartida, el HTML pasa al cronómetro LOCAL y lo indica expresamente. Ese modo no sincroniza teléfonos. La sincronización real requiere que el servidor publique Code.gs actualizado.
