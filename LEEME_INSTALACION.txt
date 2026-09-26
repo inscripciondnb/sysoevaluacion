@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-yoyo-omitir-y-luego-iniciar-2026-09-26
+   produccion-buscador-y-borrado-dependencia-2026-09-26
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -80,6 +80,9 @@ ELIMINAR EVALUACIONES
 - REINICIAR TODAS LAS EVALUACIONES borra todos los resultados de todos los años y limpia las sesiones compartidas, pero conserva todas las fichas.
 - ELIMINAR TODOS LOS REGISTROS EN GENERAL realiza un reinicio absoluto: borra fichas de funcionarios, evaluaciones y sesiones compartidas. Conserva solamente las hojas, encabezados y configuración.
 - Los borrados masivos requieren escribir una confirmación exacta para evitar accidentes.
+- El panel principal del evaluador permite buscar dependencias por nombre en todos los comandos.
+- ELIMINAR TODOS LOS REGISTROS EN GENERAL y REINICIAR TODAS LAS EVALUACIONES están en el panel principal, sin ingresar a una dependencia.
+- Dentro de una dependencia, ELIMINAR TODOS LOS REGISTROS DE ESTA DEPENDENCIA borra sus fichas y resultados históricos, sin tocar otros comandos o dependencias. Bloquea el borrado si hay una sesión compartida activa.
 
 API CONFIGURADA
 https://script.google.com/macros/s/AKfycbwMBHKx-Zj3ambN3xRz8TrynGTZ2jt5vAdFn5jqZ_R3DElw2EZ5gWTMBWrCsn0ggpcGSg/exec

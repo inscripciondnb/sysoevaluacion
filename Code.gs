@@ -25,6 +25,10 @@ const YOYO_AUDIO_START_SECONDS = 147.22;
 const RESULTADOS_RESET_PROPERTY = 'BOMBEROS_RESULTADOS_RESET_MS';
 const REGISTROS_RESET_PROPERTY = 'BOMBEROS_REGISTROS_RESET_MS';
 
+function resetDependenciaKey_(comando, destacamento) {
+  return 'BOMBEROS_DEP_RESET_' + encodeURIComponent(comando + '|' + destacamento);
+}
+
 
 
 // Comandos y dependencias tomados de la planilla oficial entregada.
@@ -135,8 +139,8 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'produccion-yoyo-omitir-y-luego-iniciar-2026-09-26',
-    acciones: ['confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
+    version: 'produccion-buscador-y-borrado-dependencia-2026-09-26',
+    acciones: ['confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'eliminarRegistrosDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
 
   });
 
@@ -220,6 +224,11 @@ function doPost(e) {
       case 'eliminarEvaluacionesDestacamento':
         validarSesionEvaluador_(body.token);
         result = eliminarEvaluacionesDestacamento_(data);
+        break;
+
+      case 'eliminarRegistrosDestacamento':
+        validarSesionEvaluador_(body.token);
+        result = eliminarRegistrosDestacamento_(data);
         break;
 
       case 'reiniciarTodasEvaluaciones':
@@ -989,6 +998,10 @@ function registrarFuncionario_(data) {
 
   const destacamento = normalizarDependencia_(data.destacamento || data.dest);
   const comando = valor_(data.comando) || comandoDependencia_(destacamento);
+  const resetDependenciaMs = Number(PropertiesService.getScriptProperties().getProperty(resetDependenciaKey_(comando, destacamento)) || 0);
+  if (resetDependenciaMs && (!registroCreadoMs || registroCreadoMs < resetDependenciaMs)) {
+    throw new Error('Esta ficha es anterior al borrado de la dependencia. Recargá la página y registrala nuevamente.');
+  }
 
 
 
@@ -1417,6 +1430,51 @@ function eliminarEvaluacionesDestacamento_(data) {
   });
   limpiarSesionesCompartidas_({comando:comando, destacamento:destacamento});
   return {eliminados:eliminados, comando:comando, destacamento:destacamento, funcionarios:Object.keys(ids).length};
+}
+
+/** Borra las fichas y el historial de una sola dependencia dentro de su comando. */
+function eliminarRegistrosDestacamento_(data) {
+  const destacamento = normalizarDependencia_(data.destacamento);
+  const comando = valor_(data.comando);
+  if (!dependenciaValida_(comando, destacamento)) throw new Error('Comando o dependencia no válidos.');
+  if (valor_(data.confirmacion) !== 'ELIMINAR ' + comando + ' / ' + destacamento) {
+    throw new Error('Confirmación de seguridad no válida.');
+  }
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    asegurarSinSesionActiva_({comando:comando, destacamento:destacamento});
+    const ss = getDb_();
+    const shF = ss.getSheetByName('Funcionarios');
+    const shR = ss.getSheetByName('Resultados');
+    const colsF = Math.max(30, shF.getLastColumn());
+    const filasF = shF.getLastRow() > 1 ? shF.getRange(2, 1, shF.getLastRow() - 1, colsF).getValues() : [];
+    const ids = {};
+    const conservarF = filasF.filter(function(row) {
+      const dep = normalizarDependencia_(row[8]);
+      const cmd = String(row[28] || '') || comandoDependencia_(dep);
+      if (dep !== destacamento || cmd !== comando) return true;
+      ids[String(row[0] || '')] = true;
+      return false;
+    });
+    const colsR = Math.max(10, shR.getLastColumn());
+    const filasR = shR.getLastRow() > 1 ? shR.getRange(2, 1, shR.getLastRow() - 1, colsR).getValues() : [];
+    const conservarR = filasR.filter(function(row) { return !ids[String(row[2] || '')]; });
+    if (filasR.length) {
+      shR.getRange(2, 1, filasR.length, colsR).clearContent();
+      if (conservarR.length) shR.getRange(2, 1, conservarR.length, colsR).setValues(conservarR);
+    }
+    if (filasF.length) {
+      shF.getRange(2, 1, filasF.length, colsF).clearContent();
+      if (conservarF.length) shF.getRange(2, 1, conservarF.length, colsF).setValues(conservarF);
+    }
+    limpiarSesionesCompartidas_({comando:comando, destacamento:destacamento});
+    PropertiesService.getScriptProperties().setProperty(resetDependenciaKey_(comando, destacamento), String(Date.now()));
+    SpreadsheetApp.flush();
+    return {comando:comando, destacamento:destacamento,
+      funcionariosEliminados:filasF.length - conservarF.length,
+      resultadosEliminados:filasR.length - conservarR.length};
+  } finally { lock.releaseLock(); }
 }
 
 /** Reinicio general para pasar de pruebas a operación real. Conserva todas las fichas. */
