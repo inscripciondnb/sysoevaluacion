@@ -409,7 +409,7 @@ h1,.hero-title{font-weight:800!important}
 </div>
 
 <div id="excelDownloadArea" style="display:none;position:fixed;left:12px;right:12px;bottom:58px;z-index:1300;text-align:center">
-  <a id="excelDownloadLink" class="btn primary" style="display:inline-flex;margin:0;max-width:520px;width:100%;text-decoration:none" download>⬇ DESCARGAR EXCEL AHORA</a>
+  <button id="excelDownloadButton" class="btn primary" style="margin:0;max-width:520px;width:100%">⬇ GUARDAR / COMPARTIR EXCEL</button>
 </div>
 <div id="netStatus" class="net-status online">En línea</div>
 <div id="msg" class="msg hidden"></div>
@@ -656,6 +656,42 @@ async function save(d){
 function format(s){const m=Math.floor(s/60),x=Math.floor(s%60),d=Math.floor((s%1)*10);return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')+'.'+d}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 
+let excelPendiente=null;
+
+async function descargarExcelPendiente(){
+ if(!excelPendiente)return;
+ const {blob,nombre}=excelPendiente;
+ const file=new File([blob],nombre,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+
+ // En iPhone/Android esta es la vía más confiable: abre la hoja nativa
+ // "Guardar en Archivos / Compartir", iniciada directamente por el toque.
+ if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+   try{
+     await navigator.share({files:[file],title:nombre});
+     return;
+   }catch(e){
+     if(e && e.name==='AbortError')return;
+   }
+ }
+
+ // PC y navegadores que soportan descarga normal.
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;
+ a.download=nombre;
+ a.rel='noopener';
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+
+ // Si el navegador ignora "download" (algunos Safari), abre el archivo
+ // para que pueda guardarse desde el visor del sistema.
+ setTimeout(()=>{
+   try{window.open(url,'_blank')}catch(e){}
+   setTimeout(()=>URL.revokeObjectURL(url),60000);
+ },350);
+}
+
 async function generarExcel(tipo){
  try{
    if(!navigator.onLine)throw new Error('Para generar el Excel necesitás conexión a internet.');
@@ -664,7 +700,8 @@ async function generarExcel(tipo){
 
    const area=document.getElementById('excelDownloadArea');
    area.style.display='none';
-   msg(esDest?'Generando Excel de '+currentStation+'...':'Generando Excel general...','ok');
+   excelPendiente=null;
+   message(esDest?'Generando Excel de '+currentStation+'...':'Generando Excel general...');
 
    const payload={anio:new Date().getFullYear()};
    if(esDest)payload.destacamento=currentStation;
@@ -678,27 +715,16 @@ async function generarExcel(tipo){
    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
 
    const blob=new Blob([bytes],{type:x.mimeType||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-   const url=URL.createObjectURL(blob);
+   excelPendiente={blob,nombre:x.nombre||'Evaluaciones_Fisicas.xlsx'};
 
-   // En celulares (especialmente iPhone) una descarga automática iniciada
-   // después de esperar al servidor puede ser bloqueada. Por eso mostramos
-   // un enlace real que el usuario toca directamente.
-   const link=document.getElementById('excelDownloadLink');
-   link.href=url;
-   link.download=x.nombre||'Evaluaciones_Fisicas.xlsx';
-   link.textContent='⬇ DESCARGAR '+(x.nombre||'EXCEL');
+   const btn=document.getElementById('excelDownloadButton');
+   btn.textContent='⬇ GUARDAR / COMPARTIR '+excelPendiente.nombre;
+   btn.onclick=descargarExcelPendiente;
    area.style.display='block';
 
-   link.onclick=()=>{
-     setTimeout(()=>{
-       area.style.display='none';
-       setTimeout(()=>URL.revokeObjectURL(url),15000);
-     },1200);
-   };
-
-   msg('Excel listo. Tocá el botón DESCARGAR EXCEL AHORA.','ok');
+   message('Excel listo. Tocá GUARDAR / COMPARTIR EXCEL.');
  }catch(e){
-   msg(e.message||String(e),'err');
+   message(e.message||String(e),false);
  }
 }
 
