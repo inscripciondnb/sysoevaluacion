@@ -1,0 +1,6 @@
+1. En el mismo proyecto de Apps Script, reemplazá Code.gs con Code_Bomberos_RESULTADOS_EN_VIVO.gs. Guardá.
+2. Implementar > Administrar implementaciones > lápiz de la URL actual > Nueva versión > Implementar.
+3. La URL /exec debe mostrar dos-evaluadores-resultados-vivos-2026-09-26.
+4. En GitHub Pages, subí Evaluaciones_Bomberos_RESULTADOS_EN_VIVO.html con el nombre index.html.
+5. Core y Sentadilla: cada evaluador elige puesto y OK desde dispositivo distinto; CONTROLAR asigna un funcionario; PAUSAR muestra el tiempo a ambos; FINALIZAR Y GUARDAR solo aparece al responsable. Evaluación individual tiene cronómetro local.
+6. La URL configurada en el HTML es https://script.google.com/macros/s/AKfycbwMBHKx-Zj3ambN3xRz8TrynGTZ2jt5vAdFn5jqZ_R3DElw2EZ5gWTMBWrCsn0ggpcGSg/exec
