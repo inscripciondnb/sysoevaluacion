@@ -81,6 +81,7 @@ ELIMINAR EVALUACIONES
 - ELIMINAR TODOS LOS REGISTROS EN GENERAL realiza un reinicio absoluto: borra fichas de funcionarios, evaluaciones y sesiones compartidas. Conserva solamente las hojas, encabezados y configuración.
 - Los borrados masivos requieren escribir una confirmación exacta para evitar accidentes.
 - El panel principal del evaluador permite buscar dependencias por nombre en todos los comandos.
+- Las dependencias con funcionarios aparecen primero, ordenadas por cantidad y destacadas en verde; las vacías quedan debajo.
 - ELIMINAR TODOS LOS REGISTROS EN GENERAL y REINICIAR TODAS LAS EVALUACIONES están en el panel principal, sin ingresar a una dependencia.
 - Dentro de una dependencia, ELIMINAR TODOS LOS REGISTROS DE ESTA DEPENDENCIA borra sus fichas y resultados históricos, sin tocar otros comandos o dependencias. Bloquea el borrado si hay una sesión compartida activa.
 
