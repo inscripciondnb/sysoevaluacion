@@ -1,0 +1,28 @@
+TEST DNB - CRONOMETRO COMPARTIDO
+
+1) GITHUB PAGES
+Reemplazar/subir todos los archivos web de esta carpeta (index.html, sw.js, manifest e iconos).
+
+2) GOOGLE APPS SCRIPT
+Reemplazar Code.gs por el incluido.
+Guardar.
+Implementar > Administrar implementaciones > Editar > Nueva versión > Implementar.
+La implementación debe ejecutarse como el propietario y conservar el acceso público usado por la web.
+
+3) USO
+- Ambos evaluadores entran al mismo destacamento y la misma prueba.
+- Cada uno escribe su nombre (ej. Profe 1 / Profe 2).
+- Cada dispositivo desmarca a los funcionarios que controlará el otro profesor.
+- Un evaluador pulsa INICIAR / UNIRSE. El otro pulsa el mismo botón y se une al reloj ya activo.
+- En Core/Sentadilla, cada profesor toca solo sus funcionarios al finalizar; el tiempo se calcula desde el mismo inicio del servidor.
+- En Yo-Yo, ambos ven el mismo cronómetro compartido y cada profesor carga metros solo a su grupo.
+- FINALIZAR detiene la sesión para todos.
+
+La sesión compartida requiere conexión a Internet. Los resultados continúan usando el sistema normal de guardado de TEST DNB.
+
+
+MODO CONTINGENCIA OFFLINE:
+- Una vez que ambos dispositivos se unieron a una sesión compartida, cada equipo guarda localmente el ID, inicio oficial y desfase horario.
+- Si cae internet, el cronómetro sigue desde el mismo inicio y muestra SIN CONEXIÓN · CRONÓMETRO LOCAL.
+- Los tiempos marcados se guardan con el segundo exacto en la cola local y se sincronizan al recuperar internet.
+- Un dispositivo que nunca se unió a la sesión antes del corte no puede incorporarse mientras esté offline.

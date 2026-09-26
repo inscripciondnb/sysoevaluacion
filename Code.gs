@@ -82,6 +82,21 @@ function doPost(e) {
         result = generarExcel_(data);
         break;
 
+      case 'iniciarSesionCompartida':
+        validarSesionEvaluador_(body.token);
+        result = iniciarSesionCompartida_(data);
+        break;
+
+      case 'estadoSesionCompartida':
+        validarSesionEvaluador_(body.token);
+        result = estadoSesionCompartida_(data);
+        break;
+
+      case 'finalizarSesionCompartida':
+        validarSesionEvaluador_(body.token);
+        result = finalizarSesionCompartida_(data);
+        break;
+
       default:
         throw new Error('Acción no válida: ' + action);
     }
@@ -104,6 +119,65 @@ function json_(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+
+
+/* =========================================================
+   SESIONES COMPARTIDAS DE CRONÓMETRO
+   Un único inicio en servidor para varios dispositivos.
+   ========================================================= */
+function claveSesionCompartida_(data) {
+  const dest = valor_(data.destacamento);
+  const prueba = valor_(data.prueba);
+  const anio = Number(data.anio) || new Date().getFullYear();
+  if (!dest || DESTACAMENTOS.indexOf(dest) === -1) throw new Error('Destacamento no válido.');
+  if (['Core','Sentadilla','Yo-Yo'].indexOf(prueba) === -1) throw new Error('Esta prueba no admite cronómetro compartido.');
+  return 'SESION_COMPARTIDA_' + anio + '_' + dest + '_' + prueba;
+}
+
+function iniciarSesionCompartida_(data) {
+  const key = claveSesionCompartida_(data);
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const existente = props.getProperty(key);
+    if (existente) {
+      const ses = JSON.parse(existente);
+      if (ses.estado === 'ACTIVA') return Object.assign({}, ses, {serverNow: Date.now(), yaExistia:true});
+    }
+    const ses = {
+      id: Utilities.getUuid(),
+      destacamento: valor_(data.destacamento), prueba: valor_(data.prueba),
+      anio: Number(data.anio) || new Date().getFullYear(),
+      inicioMs: Date.now(), estado:'ACTIVA', iniciadaPor: valor_(data.evaluador) || 'Evaluador'
+    };
+    props.setProperty(key, JSON.stringify(ses));
+    return Object.assign({}, ses, {serverNow: Date.now(), yaExistia:false});
+  } finally { lock.releaseLock(); }
+}
+
+function estadoSesionCompartida_(data) {
+  const key = claveSesionCompartida_(data);
+  const raw = PropertiesService.getScriptProperties().getProperty(key);
+  if (!raw) return {estado:'SIN_SESION', serverNow:Date.now()};
+  const ses = JSON.parse(raw);
+  return Object.assign({}, ses, {serverNow:Date.now()});
+}
+
+function finalizarSesionCompartida_(data) {
+  const key = claveSesionCompartida_(data);
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const raw = props.getProperty(key);
+    if (!raw) return {estado:'SIN_SESION', serverNow:Date.now()};
+    const ses = JSON.parse(raw);
+    ses.estado='FINALIZADA'; ses.finMs=Date.now(); ses.finalizadaPor=valor_(data.evaluador)||'Evaluador';
+    props.setProperty(key, JSON.stringify(ses));
+    return Object.assign({}, ses, {serverNow:Date.now()});
+  } finally { lock.releaseLock(); }
 }
 
 

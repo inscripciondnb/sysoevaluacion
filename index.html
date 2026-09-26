@@ -352,17 +352,25 @@ header h1{font-size:1.7rem!important;margin:0!important;letter-spacing:.05em!imp
 .net-status{background:rgba(8,7,6,.94);border-color:rgba(255,255,255,.1);backdrop-filter:blur(10px)}
 @media(max-width:600px){header{padding:16px 12px}.brand{justify-content:flex-start}.logo{width:46px;height:46px}.main{padding-top:12px}.card{border-radius:16px}.tests{gap:8px}.test{min-height:108px}.timer .time{font-size:3.45rem}}
 
+
+.shared-box{margin-bottom:14px;padding:14px;border:1px solid rgba(239,37,45,.32);border-radius:16px;background:linear-gradient(145deg,rgba(239,37,45,.10),rgba(10,8,7,.96))}.shared-head{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.shared-live{font-weight:900;color:#fff}.shared-live.on{color:#72e0a3}.shared-role{display:flex;gap:8px;align-items:center;margin:10px 0}.shared-role input{max-width:180px}.assign-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px;margin-top:10px;max-height:220px;overflow:auto}.assign-item{display:flex;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:#15110f;font-size:.88rem}.assign-item input{width:auto}.shared-actions{display:flex;gap:7px;flex-wrap:wrap}.shared-actions .btn{margin:0;padding:9px 12px}.shared-clock{font:400 2rem 'Staatliches';letter-spacing:.06em;color:#fff}.shared-note{font-size:.78rem;color:var(--smoke);margin-top:8px}
+
+/* ===== PORTADA LIMPIA · imagen protagonista ===== */
+#appHeader.home-hidden{display:none!important}
+#home.hero-clean{}
+#home .hero-home.hero-clean{min-height:0!important;padding:0!important;background:none!important;border:1px solid rgba(239,37,45,.24);border-radius:20px;overflow:hidden;display:block;box-shadow:0 20px 60px rgba(0,0,0,.42)}
+#home .hero-home.hero-clean:before,#home .hero-home.hero-clean:after{display:none!important}
+#home .hero-logo-image{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;background:#090807}
+@media(max-width:650px){#home .hero-home.hero-clean{min-height:0!important;padding:0!important;border-radius:16px}#home .hero-logo-image{width:100%;height:auto;object-fit:contain}}
+
 </style>
 </head>
 <body>
-<header><div class="wrap brand"><div class="logo">🔥</div><div><h1>TEST DNB</h1><p>Evaluaciones físicas · Bomberos</p></div></div></header>
+<header id="appHeader" class="home-hidden"><div class="wrap brand"><div class="logo">🔥</div><div><h1>TEST DNB</h1><p>Evaluaciones físicas · Bomberos</p></div></div></header>
 <main class="main">
 <section id="home" class="app-shell">
-  <div class="hero-home">
-    <div class="hero-kicker">Dirección Nacional de Bomberos · Evaluación anual</div>
-    <div class="hero-title">TEST <span class="dnb">DNB</span></div>
-    <p class="hero-copy">Evaluaciones físicas · Registro, pruebas, seguimiento y resultados por destacamento.</p>
-    <div class="hero-chip">Sistema operativo</div>
+  <div class="hero-home hero-clean">
+    <img src="test-dnb-logo.png" alt="TEST DNB · Evaluaciones Físicas" class="hero-logo-image">
   </div>
 
   <div class="home-actions">
@@ -474,13 +482,16 @@ header h1{font-size:1.7rem!important;margin:0!important;letter-spacing:.05em!imp
 const API_URL="https://script.google.com/macros/s/AKfycbxfwGdnwVyRGZFl957vK95vgw0p-i8RqRpXYKlokRMJE7pJS6F0u0OEDNK8yTzzXRPlQA/exec";
 const DEST=['Minas','Lascano','J.P. Varela','Treinta y Tres','Vergara','Río Branco','Melo','Fraile Muerto','Santa Clara'];
 let evaluatorToken='',data={people:[],results:{}},currentStation='',currentTest='',timerStart=0,timerInterval=null,timerRunning=false,timed={};
+let sharedSession=null,sharedPoll=null,serverOffsetMs=0,assignedIds=new Set(),lastSharedCheck=0;
 
 document.addEventListener('DOMContentLoaded',()=>{const s=document.getElementById('destacamento');DEST.forEach(x=>s.add(new Option(x,x)));document.getElementById('form').addEventListener('submit',register)});
 
-function view(id){document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');window.scrollTo(0,0)}
+function view(id){document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');const h=document.getElementById('appHeader');if(h)h.classList.toggle('home-hidden',id==='home');window.scrollTo(0,0)}
 const OFFLINE_QUEUE_KEY='bomberos_offline_queue_v1';
 const PANEL_CACHE_KEY='bomberos_panel_cache_v1';
 const TOKEN_KEY='bomberos_evaluator_token_v1';
+const SHARED_OFFLINE_KEY='dnb_shared_session_offline_v1';
+const ASSIGN_OFFLINE_KEY='dnb_shared_assignments_v1';
 
 function getQueue(){try{return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||'[]')}catch(e){return []}}
 function setQueue(q){localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(q));updateNetStatus()}
@@ -669,35 +680,88 @@ function openPersonSummary(id){
  view('personsummary');
 }
 
-function openTest(t){currentTest=t;timed={};stopTimer(true);document.getElementById('testTitle').textContent=t;document.getElementById('testSub').textContent=currentStation;view('testview');if(t==='Flexibilidad')renderFlex();else if(t==='Core'||t==='Sentadilla')renderTimed();else renderNumeric(t==='Yo-Yo'?'metros':'repeticiones')}
+function openTest(t){
+ currentTest=t;timed={};stopTimer(true);stopSharedPoll();assignedIds=new Set(people().map(p=>String(p.id)));loadSharedAssignments();
+ document.getElementById('testTitle').textContent=t;document.getElementById('testSub').textContent=currentStation;view('testview');
+ if(t==='Flexibilidad')renderFlex();else if(t==='Core'||t==='Sentadilla')renderTimed();else renderNumeric(t==='Yo-Yo'?'metros':'repeticiones');
+ if(['Core','Sentadilla','Yo-Yo'].includes(t)){if(!navigator.onLine)restoreSharedOfflineSnapshot();setTimeout(checkSharedSession,100);}
+}
 function renderFlex(){
  const yr=new Date().getFullYear();
- document.getElementById('testContent').innerHTML=people().map(p=>{
+ document.getElementById('testContent').innerHTML=(currentTest==='Yo-Yo'?sharedPanel():'')+people().map(p=>{
   const r=data.results[yr+'|'+p.id+'|Flexibilidad'],c=r?.categoria||'';
   return `<div class="person ${r?'saved-result':''}"><div class="name">${esc(p.nombre)}</div><div class="meta ${r?'saved-note':''}">${r?'Guardado previamente: '+esc(c):esc(p.grado||'')}</div><div class="scores"><button class="score a ${c==='A'?'selected':''}" onclick="cat('${p.id}','A')">A</button><button class="score b ${c==='B'?'selected':''}" onclick="cat('${p.id}','B')">B</button><button class="score c ${c==='C'?'selected':''}" onclick="cat('${p.id}','C')">C</button><button class="score na ${c==='NO APTO'?'selected':''}" onclick="cat('${p.id}','NO APTO')">NO APTO</button></div></div>`;
  }).join('')||'No hay funcionarios.';
 }
 async function cat(id,c){try{await save({funcionarioId:id,prueba:currentTest,categoria:c});message('Guardado: '+c)}catch(e){message(e.message,false)}}
-
+function sharedPanel(){
+ const role=localStorage.getItem('dnb_evaluator_name')||'';
+ return `<div class="shared-box"><div class="shared-head"><div><div class="shared-live" id="sharedState">CRONÓMETRO COMPARTIDO</div><div class="shared-clock" id="sharedClock">00:00.0</div></div><div class="shared-actions"><button class="btn start" onclick="startSharedSession()">INICIAR / UNIRSE</button><button class="btn reset" onclick="endSharedSession()">FINALIZAR</button></div></div><div class="shared-role"><span>Evaluador:</span><input id="sharedRole" value="${esc(role)}" placeholder="Profe 1 / Profe 2" onchange="saveEvaluatorName()"></div><div class="shared-note" id="sharedNote">Ambos dispositivos usan la misma hora de inicio del servidor. Marcá abajo solamente los funcionarios que vas a controlar en este dispositivo.</div><div class="assign-grid">${people().map(p=>`<label class="assign-item"><input type="checkbox" ${assignedIds.has(String(p.id))?'checked':''} onchange="toggleAssigned('${p.id}',this.checked)"><span>${esc(p.nombre)}</span></label>`).join('')}</div></div>`;
+}
+function saveEvaluatorName(){const e=document.getElementById('sharedRole');if(e)localStorage.setItem('dnb_evaluator_name',e.value.trim())}
+function toggleAssigned(id,on){on?assignedIds.add(String(id)):assignedIds.delete(String(id));saveSharedAssignments();renderAssignedPeople()}
+function sharedStorageKey(){return [new Date().getFullYear(),currentStation,currentTest].join('|')}
+function saveSharedAssignments(){try{const all=JSON.parse(localStorage.getItem(ASSIGN_OFFLINE_KEY)||'{}');all[sharedStorageKey()]=[...assignedIds];localStorage.setItem(ASSIGN_OFFLINE_KEY,JSON.stringify(all))}catch(e){}}
+function loadSharedAssignments(){try{const all=JSON.parse(localStorage.getItem(ASSIGN_OFFLINE_KEY)||'{}'),a=all[sharedStorageKey()];if(Array.isArray(a))assignedIds=new Set(a.map(String))}catch(e){}}
+function saveSharedOfflineSnapshot(){
+ if(!sharedSession||sharedSession.estado!=='ACTIVA')return;
+ try{const all=JSON.parse(localStorage.getItem(SHARED_OFFLINE_KEY)||'{}');all[sharedStorageKey()]={session:sharedSession,serverOffsetMs,savedAt:Date.now()};localStorage.setItem(SHARED_OFFLINE_KEY,JSON.stringify(all))}catch(e){}
+}
+function restoreSharedOfflineSnapshot(){
+ try{const all=JSON.parse(localStorage.getItem(SHARED_OFFLINE_KEY)||'{}'),x=all[sharedStorageKey()];if(x&&x.session&&x.session.estado==='ACTIVA'){sharedSession=x.session;serverOffsetMs=Number(x.serverOffsetMs)||0;startSharedPoll();updateSharedClock();return true}}catch(e){}
+ return false;
+}
+function renderAssignedPeople(){
+ document.querySelectorAll('[data-person-id]').forEach(el=>{el.style.display=assignedIds.has(String(el.dataset.personId))?'':'none'})
+}
 function renderTimed(){
  const yr=new Date().getFullYear();
- document.getElementById('testContent').innerHTML=`<div class="timer"><div id="timerValue" class="time">00:00.0</div><div class="timerbuttons"><button class="btn start" onclick="startTimer()">Iniciar</button><button class="btn undo" onclick="undoTimed()">Deshacer</button><button class="btn reset" onclick="stopTimer(true)">Reiniciar</button></div></div><div>${people().map(p=>{
+ document.getElementById('testContent').innerHTML=sharedPanel()+`<div id="localTimerBox" class="timer"><div id="timerValue" class="time">00:00.0</div><div class="timerbuttons"><button class="btn start" onclick="startTimer()">Cronómetro local</button><button class="btn undo" onclick="undoTimed()">Deshacer</button><button class="btn reset" onclick="stopTimer(true)">Reiniciar local</button></div></div><div>${people().map(p=>{
    const r=data.results[yr+'|'+p.id+'|'+currentTest];
    if(r&&r.segundos!==''&&r.segundos!=null)timed[p.id]={seconds:Number(r.segundos),order:0,previous:true};
-   return `<button id="t-${p.id}" class="tap ${r?'done saved-result':''}" onclick="finishTimed('${p.id}')"><strong>${esc(p.nombre)}</strong><div class="meta ${r?'saved-note':''}">${r&&r.segundos!==''&&r.segundos!=null?'Guardado: '+r.segundos+' segundos · tocar para reemplazar':'Tocar cuando finalice'}</div></button>`;
-  }).join('')}</div>`;
+   return `<button data-person-id="${p.id}" id="t-${p.id}" class="tap ${r?'done saved-result':''}" onclick="finishTimed('${p.id}')"><strong>${esc(p.nombre)}</strong><div class="meta ${r?'saved-note':''}">${r&&r.segundos!==''&&r.segundos!=null?'Guardado: '+r.segundos+' segundos · tocar para reemplazar':'Tocar cuando finalice'}</div></button>`;
+  }).join('')}</div>`; renderAssignedPeople();
 }
-function startTimer(){if(timerRunning)return;timerStart=performance.now();timerRunning=true;timerInterval=setInterval(()=>{const e=document.getElementById('timerValue');if(e)e.textContent=format((performance.now()-timerStart)/1000)},100)}
+function startTimer(){if(sharedSession&&sharedSession.estado==='ACTIVA'){message('Ya hay una sesión compartida activa. Usá ese cronómetro.',false);return}if(timerRunning)return;timerStart=performance.now();timerRunning=true;timerInterval=setInterval(()=>{const e=document.getElementById('timerValue');if(e)e.textContent=format((performance.now()-timerStart)/1000)},100)}
 function stopTimer(reset){clearInterval(timerInterval);timerRunning=false;if(reset){const e=document.getElementById('timerValue');if(e)e.textContent='00:00.0'}}
-async function finishTimed(id){if(!timerRunning)return;const sec=Number(((performance.now()-timerStart)/1000).toFixed(1));timed[id]={seconds:sec,order:Date.now()};const b=document.getElementById('t-'+id);b.classList.add('done');b.querySelector('.meta').textContent=sec+' segundos';try{await save({funcionarioId:id,prueba:currentTest,segundos:sec,categoria:'PENDIENTE_TABLA'})}catch(e){message(e.message,false)}}
-function undoTimed(){const a=Object.entries(timed).sort((x,y)=>y[1].order-x[1].order);if(!a.length)return;const id=a[0][0];delete timed[id];const b=document.getElementById('t-'+id);if(b){b.classList.remove('done');b.querySelector('.meta').textContent='Tocar cuando finalice'}message('Último registro deshecho')}
+function currentSharedSeconds(){return sharedSession&&sharedSession.estado==='ACTIVA'?Math.max(0,((Date.now()+serverOffsetMs)-Number(sharedSession.inicioMs))/1000):null}
+async function finishTimed(id){
+ if(!assignedIds.has(String(id)))return;
+ const sharedSec=currentSharedSeconds();if(sharedSec===null&&!timerRunning){message('Iniciá o unite al cronómetro compartido.',false);return}
+ const sec=Number((sharedSec!==null?sharedSec:(performance.now()-timerStart)/1000).toFixed(1));timed[id]={seconds:sec,order:Date.now()};const b=document.getElementById('t-'+id);b.classList.add('done');b.querySelector('.meta').textContent=sec+' segundos';try{await save({funcionarioId:id,prueba:currentTest,segundos:sec,categoria:'PENDIENTE_TABLA'})}catch(e){message(e.message,false)}
+}
+function undoTimed(){const a=Object.entries(timed).filter(x=>x[1].order>0).sort((x,y)=>y[1].order-x[1].order);if(!a.length)return;const id=a[0][0];delete timed[id];const b=document.getElementById('t-'+id);if(b){b.classList.remove('done');b.querySelector('.meta').textContent='Tocar cuando finalice'}message('Último registro deshecho')}
+async function startSharedSession(){
+ if(!navigator.onLine){message('La sesión compartida necesita conexión a internet.',false);return}
+ saveEvaluatorName();const evaluador=(document.getElementById('sharedRole')?.value||'Evaluador').trim();
+ try{const r=await apiRaw('iniciarSesionCompartida',{destacamento:currentStation,prueba:currentTest,anio:new Date().getFullYear(),evaluador});applySharedSession(r.data||r);message((r.data||r).yaExistia?'Te uniste a la sesión activa':'Sesión compartida iniciada')}catch(e){message(e.message,false)}
+}
+async function checkSharedSession(){
+ if(!navigator.onLine||!['Core','Sentadilla','Yo-Yo'].includes(currentTest))return;
+ try{const r=await apiRaw('estadoSesionCompartida',{destacamento:currentStation,prueba:currentTest,anio:new Date().getFullYear()});applySharedSession(r.data||r)}catch(e){}
+}
+function applySharedSession(ses){
+ if(ses.serverNow)serverOffsetMs=Number(ses.serverNow)-Date.now();sharedSession=ses;if(ses.estado==='ACTIVA')saveSharedOfflineSnapshot();
+ const st=document.getElementById('sharedState');if(st){st.textContent=ses.estado==='ACTIVA'?'● SESIÓN EN VIVO · '+currentStation+' · '+currentTest:'CRONÓMETRO COMPARTIDO';st.classList.toggle('on',ses.estado==='ACTIVA')}
+ if(ses.estado==='ACTIVA'){stopTimer(true);startSharedPoll()}else stopSharedPoll();updateSharedClock();
+ const note=document.getElementById('sharedNote');if(note)note.textContent=navigator.onLine?'✓ SINCRONIZADO · Ambos dispositivos usan la misma hora oficial de inicio.':'⚠ SIN CONEXIÓN · CRONÓMETRO LOCAL DE CONTINGENCIA. Los tiempos marcados se guardan en este dispositivo y se sincronizan al volver internet.';
+}
+function updateSharedClock(){const e=document.getElementById('sharedClock');if(!e)return;const sec=currentSharedSeconds();e.textContent=sec===null?'00:00.0':format(sec)}
+function startSharedPoll(){stopSharedPoll();lastSharedCheck=Date.now();sharedPoll=setInterval(()=>{updateSharedClock();if(Date.now()-lastSharedCheck>3000){lastSharedCheck=Date.now();checkSharedSession()}},100)}
+function stopSharedPoll(){if(sharedPoll){clearInterval(sharedPoll);sharedPoll=null}}
+async function endSharedSession(){
+ if(!sharedSession||sharedSession.estado!=='ACTIVA'){message('No hay una sesión compartida activa.',false);return}
+ if(!confirm('¿Finalizar el cronómetro compartido para todos los evaluadores?'))return;
+ const evaluador=(document.getElementById('sharedRole')?.value||'Evaluador').trim();try{const r=await apiRaw('finalizarSesionCompartida',{destacamento:currentStation,prueba:currentTest,anio:new Date().getFullYear(),evaluador});applySharedSession(r.data||r);message('Sesión compartida finalizada')}catch(e){message(e.message,false)}
+}
 
 function renderNumeric(type){
  const unit=type==='metros'?'m':'rep',yr=new Date().getFullYear();
- document.getElementById('testContent').innerHTML=people().map(p=>{
+ document.getElementById('testContent').innerHTML=(currentTest==='Yo-Yo'?sharedPanel():'')+people().map(p=>{
   const r=data.results[yr+'|'+p.id+'|'+currentTest],v=r?(type==='metros'?r.metros:r.repeticiones):'';
-  return `<div class="entry ${r?'saved-result':''}"><div><div class="name">${esc(p.nombre)}</div><div class="meta ${r?'saved-note':''}">${r?'Valor guardado: '+esc(v)+' '+unit:unit}</div></div><input id="${type}-${p.id}" type="number" min="0" inputmode="numeric" value="${v!==''&&v!=null?esc(v):''}"><button class="save" onclick="saveNum('${p.id}','${type}')">${r?'Actualizar':'Guardar'}</button></div><button class="score na" style="width:100%;margin-bottom:12px" onclick="cat('${p.id}','NO APTO')">NO APTO</button>`;
+  return `<div data-person-id="${p.id}"><div class="entry ${r?'saved-result':''}"><div><div class="name">${esc(p.nombre)}</div><div class="meta ${r?'saved-note':''}">${r?'Valor guardado: '+esc(v)+' '+unit:unit}</div></div><input id="${type}-${p.id}" type="number" min="0" inputmode="numeric" value="${v!==''&&v!=null?esc(v):''}"><button class="save" onclick="saveNum('${p.id}','${type}')">${r?'Actualizar':'Guardar'}</button></div><button class="score na" style="width:100%;margin-bottom:12px" onclick="cat('${p.id}','NO APTO')">NO APTO</button></div>`;
  }).join('')||'No hay funcionarios.';
+ if(currentTest==='Yo-Yo')renderAssignedPeople();
 }
 function clasificarYoyoCliente(metros,edad){
  const m=Number(metros),e=Number(edad);
@@ -829,8 +893,8 @@ async function generarExcel(tipo){
 document.getElementById('homeYear').textContent='PERÍODO '+new Date().getFullYear();
 
 evaluatorToken=sessionStorage.getItem(TOKEN_KEY)||evaluatorToken;
-window.addEventListener('online',()=>{updateNetStatus();syncOfflineQueue()});
-window.addEventListener('offline',()=>updateNetStatus());
+window.addEventListener('online',async()=>{updateNetStatus('Reconectando…');if(['Core','Sentadilla','Yo-Yo'].includes(currentTest))await checkSharedSession();await syncOfflineQueue();});
+window.addEventListener('offline',()=>{updateNetStatus();if(sharedSession&&sharedSession.estado==='ACTIVA'){saveSharedOfflineSnapshot();const st=document.getElementById('sharedState');if(st){st.textContent='⚠ SIN CONEXIÓN · CRONÓMETRO LOCAL';st.classList.add('on')}const note=document.getElementById('sharedNote');if(note)note.textContent='Los tiempos que marques ahora quedan guardados localmente con el segundo exacto y se sincronizan automáticamente al volver internet.'}});
 updateNetStatus();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
 
