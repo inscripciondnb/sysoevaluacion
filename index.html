@@ -281,6 +281,21 @@ h1,.hero-title{font-weight:800!important}
 .export-box{margin:18px 0;padding:15px;border:1px solid rgba(212,169,78,.20);border-radius:13px;background:var(--carbon)}
 .export-box p{margin:0 0 10px;color:var(--smoke);font-size:.76rem;line-height:1.4}
 .export-btn{width:100%;padding:13px 15px;border:1px solid rgba(212,169,78,.42);border-radius:11px;background:linear-gradient(145deg,rgba(212,169,78,.13),rgba(200,39,45,.10));color:var(--gold2);font-weight:700}
+
+.auth-overlay{position:fixed;inset:0;z-index:1000;background:rgba(8,6,5,.88);backdrop-filter:blur(8px);display:grid;place-items:center;padding:18px}
+.auth-card{width:min(430px,100%);background:linear-gradient(155deg,#201914,#15110e);border:1px solid rgba(212,169,78,.3);border-top:4px solid var(--red);border-radius:18px;padding:28px;box-shadow:0 25px 70px rgba(0,0,0,.5)}
+.auth-card h2{margin:0 0 7px;color:var(--gold);font-family:'Montserrat','Barlow',sans-serif}
+.auth-card p{color:var(--smoke);font-size:.84rem;line-height:1.45}
+.auth-card input{width:100%;margin:12px 0;padding:14px;background:var(--carbon);color:var(--cream);border:1px solid var(--line);border-radius:11px;outline:none}
+.auth-card input:focus{border-color:var(--gold)}
+.auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+.auth-cancel{background:var(--carbon);color:var(--gold2);border:1px solid var(--line)}
+
+/* ===== MODO SIN CONEXIÓN ===== */
+.net-status{position:fixed;right:12px;bottom:12px;z-index:1200;padding:8px 11px;border-radius:999px;font-size:.68rem;font-weight:700;letter-spacing:.04em;border:1px solid var(--line);background:rgba(22,17,14,.94);color:var(--smoke);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.net-status.offline{color:#f0b36f;border-color:rgba(224,82,82,.45)}
+.net-status.syncing{color:var(--gold2)}
+.net-status.online{color:#8fd9ad;border-color:rgba(76,175,125,.4)}
 </style>
 </head>
 <body>
@@ -379,22 +394,132 @@ h1,.hero-title{font-weight:800!important}
 <section id="testview" class="hidden"><button class="back" onclick="view('station')">← Pruebas</button><div class="card"><h2 id="testTitle"></h2><p id="testSub" class="sub"></p><div id="testContent"></div></div></section>
 <section id="personsummary" class="hidden"><button class="back" onclick="view('station')">← Personal</button><div class="card"><div id="personSummaryContent"></div></div></section>
 </main>
+
+<div id="authOverlay" class="auth-overlay hidden">
+  <div class="auth-card">
+    <div class="eval-eyebrow">Acceso restringido</div>
+    <h2>Panel del evaluador</h2>
+    <p>Ingresá la contraseña para acceder a funcionarios, fichas de salud y resultados.</p>
+    <input id="evaluatorPassword" type="password" autocomplete="current-password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')loginEvaluator()">
+    <div class="auth-actions">
+      <button class="btn auth-cancel" onclick="closeEvaluatorLogin()">Cancelar</button>
+      <button class="btn primary" style="margin:0" onclick="loginEvaluator()">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<div id="netStatus" class="net-status online">En línea</div>
 <div id="msg" class="msg hidden"></div>
 
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbxfwGdnwVyRGZFl957vK95vgw0p-i8RqRpXYKlokRMJE7pJS6F0u0OEDNK8yTzzXRPlQA/exec";
 const DEST=['Minas','Lascano','J.P. Varela','Treinta y Tres','Vergara','Río Branco','Melo','Fraile Muerto','Santa Clara'];
-let data={people:[],results:{}},currentStation='',currentTest='',timerStart=0,timerInterval=null,timerRunning=false,timed={};
+let evaluatorToken='',data={people:[],results:{}},currentStation='',currentTest='',timerStart=0,timerInterval=null,timerRunning=false,timed={};
 
 document.addEventListener('DOMContentLoaded',()=>{const s=document.getElementById('destacamento');DEST.forEach(x=>s.add(new Option(x,x)));document.getElementById('form').addEventListener('submit',register)});
 
 function view(id){document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');window.scrollTo(0,0)}
-async function api(action,d={}){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:action,data:d})});const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw Error('Apps Script no devolvió JSON. Revisá permisos de la implementación.')}if(j.ok===false)throw Error(j.error||'Error del servidor');return j}
+const OFFLINE_QUEUE_KEY='bomberos_offline_queue_v1';
+const PANEL_CACHE_KEY='bomberos_panel_cache_v1';
+const TOKEN_KEY='bomberos_evaluator_token_v1';
+
+function getQueue(){try{return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||'[]')}catch(e){return []}}
+function setQueue(q){localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(q));updateNetStatus()}
+function cachePanel(){try{localStorage.setItem(PANEL_CACHE_KEY,JSON.stringify({savedAt:Date.now(),data:data}))}catch(e){}}
+function loadCachedPanel(){try{const c=JSON.parse(localStorage.getItem(PANEL_CACHE_KEY)||'null');return c&&c.data?c.data:null}catch(e){return null}}
+function updateNetStatus(text){
+ const el=document.getElementById('netStatus');if(!el)return;
+ const q=getQueue().length;
+ if(text){el.textContent=text;el.className='net-status syncing';return}
+ if(!navigator.onLine){el.textContent='Sin conexión · '+q+' pendiente'+(q===1?'':'s');el.className='net-status offline'}
+ else if(q){el.textContent=q+' dato'+(q===1?'':'s')+' por sincronizar';el.className='net-status syncing'}
+ else{el.textContent='En línea';el.className='net-status online'}
+}
+function queueOffline(action,d){
+ const q=getQueue();
+ q.push({id:Date.now()+'-'+Math.random().toString(36).slice(2),action,data:d,createdAt:new Date().toISOString()});
+ setQueue(q);
+ return {ok:true,offline:true,queued:true,data:{...d,categoria:d.categoria||''}};
+}
+async function apiRaw(action,d={}){
+ const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:action,data:d,token:evaluatorToken})});
+ const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw Error('Apps Script no devolvió JSON. Revisá permisos de la implementación.')}
+ if(j.ok===false)throw Error(j.error||'Error del servidor');return j
+}
+async function api(action,d={}){
+ const queueable=['registrarFuncionario','guardarResultado'];
+ if(!navigator.onLine&&queueable.includes(action))return queueOffline(action,d);
+ try{return await apiRaw(action,d)}
+ catch(e){
+   if(queueable.includes(action)&&(e instanceof TypeError||/fetch|network|conex/i.test(String(e.message))))return queueOffline(action,d);
+   throw e
+ }
+}
+async function syncOfflineQueue(){
+ if(!navigator.onLine)return;
+ let q=getQueue();if(!q.length){updateNetStatus();return}
+ updateNetStatus('Sincronizando '+q.length+'...');
+ const remaining=[];
+ for(const item of q){
+   try{await apiRaw(item.action,item.data)}
+   catch(e){
+     if(/autorizado|sesión vencida/i.test(String(e.message))&&item.action==='guardarResultado'){remaining.push(item);continue}
+     if(e instanceof TypeError||/fetch|network|conex/i.test(String(e.message))){remaining.push(item);continue}
+     // Errores de validación no se descartan: quedan para revisión/reintento.
+     remaining.push(item);
+   }
+ }
+ setQueue(remaining);
+ if(!remaining.length){
+   try{
+     if(evaluatorToken){const r=await apiRaw('cargarPanel');const panel=r.data||r;data.people=panel.people||[];data.results=panel.results||{};cachePanel()}
+   }catch(e){}
+   message('Datos pendientes sincronizados correctamente');
+ }else if(remaining.some(x=>x.action==='guardarResultado')&&!evaluatorToken){
+   message('Hay resultados pendientes. Ingresá nuevamente al Panel del evaluador para sincronizarlos.',false);
+ }
+ updateNetStatus();
+}
+
 function val(id){return document.getElementById(id).value.trim()}
 function message(t,ok=true){const m=document.getElementById('msg');m.textContent=t;m.className='msg '+(ok?'ok':'err');setTimeout(()=>m.classList.add('hidden'),3000)}
-async function register(e){e.preventDefault();const b=e.submitter;b.disabled=true;b.textContent='Guardando...';try{await api('registrarFuncionario',{grado:val('grado'),nombre:val('nombre'),ci:val('ci'),nacimiento:val('nacimiento'),genero:val('genero'),telefono:val('telefono'),destacamento:val('destacamento'),ingreso:val('ingreso'),carne:val('carne'),vencCarne:val('vencCarne'),ergometria:val('ergometria'),fechaErgo:val('fechaErgo'),enfermedadCronica:val('enfermedadCronica'),enfermedadCronicaOtro:val('enfermedadCronicaOtro'),enfermedadAntecedente:val('enfermedadAntecedente'),enfermedadAntecedenteOtro:val('enfermedadAntecedenteOtro'),presentaLesion:val('presentaLesion'),lesionCual:val('lesionCual'),lesionAfecta:val('lesionAfecta'),tareasImpedidas:val('tareasImpedidas'),rehabilitacion:val('rehabilitacion'),rehabilitacionDetalle:val('rehabilitacionDetalle'),peso:val('peso'),altura:val('altura')});message('Ficha guardada correctamente');e.target.reset();document.getElementById('fechaActual').value=new Date().toISOString().slice(0,10);actualizarEdadLive();setTimeout(()=>view('home'),800)}catch(x){message(x.message,false)}finally{b.disabled=false;b.textContent='Guardar ficha'}}
+async function register(e){
+ e.preventDefault();const b=e.submitter;b.disabled=true;b.textContent='Guardando...';
+ const payload={grado:val('grado'),nombre:val('nombre'),ci:val('ci'),nacimiento:val('nacimiento'),genero:val('genero'),telefono:val('telefono'),destacamento:val('destacamento'),ingreso:val('ingreso'),carne:val('carne'),vencCarne:val('vencCarne'),ergometria:val('ergometria'),fechaErgo:val('fechaErgo'),enfermedadCronica:val('enfermedadCronica'),enfermedadCronicaOtro:val('enfermedadCronicaOtro'),enfermedadAntecedente:val('enfermedadAntecedente'),enfermedadAntecedenteOtro:val('enfermedadAntecedenteOtro'),presentaLesion:val('presentaLesion'),lesionCual:val('lesionCual'),lesionAfecta:val('lesionAfecta'),tareasImpedidas:val('tareasImpedidas'),rehabilitacion:val('rehabilitacion'),rehabilitacionDetalle:val('rehabilitacionDetalle'),peso:val('peso'),altura:val('altura')};
+ try{
+   const r=await api('registrarFuncionario',payload);
+   message(r.offline?'Sin conexión: ficha guardada en este dispositivo. Se subirá automáticamente al recuperar internet.':'Ficha guardada correctamente');
+   e.target.reset();document.getElementById('fechaActual').value=new Date().toISOString().slice(0,10);actualizarEdadLive();setTimeout(()=>view('home'),800)
+ }catch(x){message(x.message,false)}
+ finally{b.disabled=false;b.textContent='Guardar ficha'}
+}
 
-async function openPanel(){view('stations');document.getElementById('stationList').innerHTML='Cargando...';try{const r=await api('cargarPanel');const panel=r.data||r;data.people=panel.people||[];data.results=panel.results||{};renderStations()}catch(e){document.getElementById('stationList').innerHTML=e.message}}
+function openPanel(){
+ if(!evaluatorToken){document.getElementById('authOverlay').classList.remove('hidden');setTimeout(()=>document.getElementById('evaluatorPassword').focus(),50);return}
+ loadEvaluatorPanel();
+}
+function closeEvaluatorLogin(){document.getElementById('authOverlay').classList.add('hidden');document.getElementById('evaluatorPassword').value=''}
+async function loginEvaluator(){
+ const password=document.getElementById('evaluatorPassword').value;
+ if(!password){message('Ingresá la contraseña.',false);return}
+ try{
+   const r=await api('loginEvaluador',{password});
+   evaluatorToken=(r.data||r).token;sessionStorage.setItem(TOKEN_KEY,evaluatorToken);
+   closeEvaluatorLogin();
+   await loadEvaluatorPanel();
+ }catch(e){message(e.message||String(e),false)}
+}
+async function loadEvaluatorPanel(){
+ view('stations');document.getElementById('stationList').innerHTML='Cargando...';
+ if(!navigator.onLine){
+   const cached=loadCachedPanel();
+   if(cached){data=cached;renderStations();message('Modo sin conexión: usando la última información guardada en este dispositivo.');return}
+   document.getElementById('stationList').innerHTML='Sin conexión y todavía no hay información del panel guardada en este dispositivo.';return
+ }
+ try{
+   const r=await api('cargarPanel');const panel=r.data||r;data.people=panel.people||[];data.results=panel.results||{};cachePanel();renderStations();await syncOfflineQueue()
+ }catch(e){evaluatorToken='';sessionStorage.removeItem(TOKEN_KEY);document.getElementById('stationList').innerHTML=e.message}
+}
 function people(){return data.people.filter(p=>(p.destacamento||p.dest)===currentStation)}
 function renderStations(){document.getElementById('stationList').innerHTML=DEST.map(s=>`<button class="station" onclick="selectStation('${s}')"><strong>${s}</strong><span class="badge">${data.people.filter(p=>(p.destacamento||p.dest)===s).length} funcionarios</span></button>`).join('')}
 function selectStation(s){
@@ -521,31 +646,55 @@ async function save(d){
  const r=await api('guardarResultado',d),saved=(r.data||r);
  const key=d.anio+'|'+d.funcionarioId+'|'+d.prueba;
  data.results[key]={...(data.results[key]||{}),...d,...saved};
+ cachePanel();
+ if(r.offline)message('Sin conexión: resultado guardado en este dispositivo. Se sincronizará automáticamente.');
  return saved;
 }
 function format(s){const m=Math.floor(s/60),x=Math.floor(s%60),d=Math.floor((s%1)*10);return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')+'.'+d}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 
 async function generarExcel(tipo){
- const ventana=window.open('about:blank','_blank');
  try{
+   if(!navigator.onLine)throw new Error('Para generar el Excel necesitás conexión a internet.');
    const esDest=tipo==='destacamento';
    if(esDest&&!currentStation)throw new Error('Primero seleccioná un destacamento.');
    msg(esDest?'Generando Excel de '+currentStation+'...':'Generando Excel general...','ok');
+
    const payload={anio:new Date().getFullYear()};
    if(esDest)payload.destacamento=currentStation;
+
    const r=await api('generarExcel',payload);
-   const x=r.data||r,destino=x.downloadUrl||x.url;
-   if(!destino)throw new Error('No se recibió el enlace del archivo.');
-   if(ventana)ventana.location.href=destino;else window.location.href=destino;
-   msg('Excel generado: '+x.filas+' funcionarios · '+x.destacamento,'ok');
+   const x=r.data||r;
+   if(!x.base64)throw new Error('No se recibió el archivo Excel.');
+
+   const bin=atob(x.base64);
+   const bytes=new Uint8Array(bin.length);
+   for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+
+   const blob=new Blob([bytes],{type:x.mimeType||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');
+   a.href=url;
+   a.download=x.nombre||'Evaluaciones_Fisicas.xlsx';
+   document.body.appendChild(a);
+   a.click();
+   a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),3000);
+
+   msg('Excel descargado: '+x.filas+' funcionarios · '+x.destacamento,'ok');
  }catch(e){
-   if(ventana)ventana.close();
    msg(e.message||String(e),'err');
  }
 }
 
 document.getElementById('homeYear').textContent='PERÍODO '+new Date().getFullYear();
+
+evaluatorToken=sessionStorage.getItem(TOKEN_KEY)||evaluatorToken;
+window.addEventListener('online',()=>{updateNetStatus();syncOfflineQueue()});
+window.addEventListener('offline',()=>updateNetStatus());
+updateNetStatus();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+
 </script>
 </body>
 </html>
