@@ -1,15 +1,46 @@
-EVALUACIONES FÍSICAS BOMBEROS — INSTALACIÓN COMPLETA
+EVALUACIONES FÍSICAS — BOMBEROS — VERSIÓN DEFINITIVA
 
-Archivos:
-- index.html: página de la aplicación.
-- Code.gs: servidor de Google Apps Script.
+ARCHIVOS
+- index.html: página para GitHub Pages.
+- Code.gs: servidor para Google Apps Script.
 
-1. Abrí el proyecto de Apps Script que ya guarda los funcionarios y resultados. No crees otro proyecto: el proyecto existente conserva el vínculo con su planilla.
-2. En el editor, reemplazá el contenido del archivo de código actual por TODO el contenido de Code.gs. Guardá.
-3. Implementar > Administrar implementaciones > seleccioná la implementación web existente > Editar (lápiz) > Versión: Nueva versión > Implementar. Copiá su URL /exec.
-4. Verificá que esa URL sea la configurada en index.html, en la línea const API_URL. La URL entregada en este paquete termina en AKfycbxfwGdnwVyRGZFl957vK95vgw0p-i8RqRpXYKlokRMJE7pJS6F0u0OEDNK8yTzzXRPlQA/exec.
-5. Abrí la URL /exec en el navegador. Debe devolver JSON con version: sesiones-compartidas-2026-09-26. Si solo dice "API Evaluaciones Bomberos activa", sigue publicada la versión anterior.
-6. Subí index.html al repositorio de GitHub Pages y reemplazá el archivo anterior. Recargá la página. Si la PWA conserva una versión anterior, cerrala y volvé a abrirla o actualizá el navegador sin caché.
-7. En dos teléfonos, elegí el mismo destacamento y Core. El primero pulsa INICIAR / UNIRSE; el segundo pulsa INICIAR / UNIRSE. Ambos deben mostrar SESIÓN EN VIVO y el mismo tiempo. Repetí con Sentadilla. Yo-Yo tiene INICIAR, PAUSAR y REINICIAR propios.
+INSTALACIÓN
+1. Reemplazá completamente el contenido de Code.gs en el proyecto de Apps Script.
+2. Guardá el proyecto.
+3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
+4. Abrí la URL /exec y verificá que muestre:
+   confirmar-asignar-iniciar-toque-2026-09-26
+5. Reemplazá el index.html del repositorio de GitHub Pages.
 
-Si Apps Script continúa rechazando iniciarSesionCompartida, el HTML pasa al cronómetro LOCAL y lo indica expresamente. Ese modo no sincroniza teléfonos. La sincronización real requiere que el servidor publique Code.gs actualizado.
+CORE Y SENTADILLA — SESIÓN COMPARTIDA
+- Se elige Evaluador 1 o Evaluador 2 desde dispositivos diferentes.
+- Ambos deben confirmar su puesto.
+- Confirmar los puestos no inicia el cronómetro.
+- Cada evaluador selecciona los funcionarios que controlará.
+- La pantalla muestra los dos evaluadores confirmados y sus funcionarios.
+- Cada evaluador debe tener al menos un funcionario antes de iniciar.
+- El botón INICIAR TIEMPO PARA LOS DOS comienza el reloj sincronizado.
+- Al tocar un funcionario propio, su tiempo se captura y guarda inmediatamente.
+- Ambos ven todos los tiempos en vivo.
+- Un evaluador no puede detener ni guardar el tiempo controlado por el otro.
+
+CORE Y SENTADILLA — EVALUACIÓN INDIVIDUAL
+- El cronómetro local solamente aparece al elegir Evaluación individual.
+
+YO-YO TEST
+- No tiene cronómetro compartido.
+- Todos los funcionarios del destacamento aparecen automáticamente.
+- No se muestra una selección previa de funcionarios.
+- Primera falta: el funcionario continúa.
+- Segunda falta: se finaliza y guarda la última distancia completada.
+
+ELIMINAR EVALUACIONES
+- Cada resultado guardado muestra ELIMINAR EVALUACIÓN ANTERIOR.
+- Antes de borrar se solicita confirmación.
+- Se elimina solamente el resultado del funcionario, prueba y año actual seleccionados.
+- Las demás pruebas y los resultados de otros años no se modifican.
+- En Core y Sentadilla debe finalizarse la sesión compartida activa antes de eliminar.
+- Después de eliminar, el funcionario queda disponible para evaluarse nuevamente desde cero.
+
+API CONFIGURADA
+https://script.google.com/macros/s/AKfycbwMBHKx-Zj3ambN3xRz8TrynGTZ2jt5vAdFn5jqZ_R3DElw2EZ5gWTMBWrCsn0ggpcGSg/exec
