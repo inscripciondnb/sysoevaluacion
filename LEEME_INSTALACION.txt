@@ -3,14 +3,16 @@ EVALUACIONES FÍSICAS — BOMBEROS — VERSIÓN DEFINITIVA
 ARCHIVOS
 - index.html: página para GitHub Pages.
 - Code.gs: servidor para Google Apps Script.
+- yoyo_oficial.mp3: pista de audio aportada para ejecutar el Yo-Yo Test.
 
 INSTALACIÓN
 1. Reemplazá completamente el contenido de Code.gs en el proyecto de Apps Script.
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   confirmar-asignar-iniciar-toque-2026-09-26
+   compartido-yoyo-audio-faltas-2026-09-26
 5. Reemplazá el index.html del repositorio de GitHub Pages.
+6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
 CORE Y SENTADILLA — SESIÓN COMPARTIDA
 - Se elige Evaluador 1 o Evaluador 2 desde dispositivos diferentes.
@@ -28,18 +30,27 @@ CORE Y SENTADILLA — EVALUACIÓN INDIVIDUAL
 - El cronómetro local solamente aparece al elegir Evaluación individual.
 
 YO-YO TEST
-- No tiene cronómetro compartido.
-- Todos los funcionarios del destacamento aparecen automáticamente.
-- No se muestra una selección previa de funcionarios.
+- Permite elegir Evaluación individual o Sesión compartida.
+- En Evaluación individual aparecen automáticamente todos los funcionarios y un evaluador controla la prueba completa.
+- En Sesión compartida, Evaluador 1 y Evaluador 2 deben confirmar sus puestos y asignarse al menos un funcionario cada uno.
+- Una vez confirmados y asignados, cualquiera de los dos puede iniciar el audio y el avance sincronizado para ambos.
+- Los dos dispositivos ven en vivo nivel, velocidad, distancia, faltas y resultados.
+- Cada evaluador solamente puede registrar o anular faltas de los funcionarios que controla.
+- Si el navegador del segundo teléfono bloquea la reproducción automática, debe tocar ACTIVAR AUDIO SINCRONIZADO; el audio se alinea con la sesión en curso.
+- En modo individual, INICIAR reproduce la pista y PAUSAR detiene tanto el audio como el avance del test.
+- En modo compartido no se permite que un solo evaluador pause o reinicie la pista para evitar desincronizar al compañero.
+- La introducción dura aproximadamente 2:27; la distancia comienza a contarse cuando empieza la carrera.
+- La pantalla acompaña el audio continuo en recorridos de 20 m, desde 8,5 km/h y niveles progresivos.
+- El tiempo guardado corresponde solamente a la carrera y no incluye la introducción.
 - Primera falta: el funcionario continúa.
-- Segunda falta: se finaliza y guarda la última distancia completada.
+- Segunda falta: se finaliza y guarda inmediatamente la última distancia completada para que ambos evaluadores vean el resultado.
 
 ELIMINAR EVALUACIONES
 - Cada resultado guardado muestra ELIMINAR EVALUACIÓN ANTERIOR.
 - Antes de borrar se solicita confirmación.
 - Se elimina solamente el resultado del funcionario, prueba y año actual seleccionados.
 - Las demás pruebas y los resultados de otros años no se modifican.
-- En Core y Sentadilla debe finalizarse la sesión compartida activa antes de eliminar.
+- En Core, Sentadilla y Yo-Yo debe finalizarse la sesión compartida activa antes de eliminar.
 - Después de eliminar, el funcionario queda disponible para evaluarse nuevamente desde cero.
 
 API CONFIGURADA
