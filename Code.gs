@@ -22,30 +22,79 @@
 
 const DB_PROPERTY = 'BOMBEROS_SPREADSHEET_ID';
 const YOYO_AUDIO_START_SECONDS = 147.22;
+const RESULTADOS_RESET_PROPERTY = 'BOMBEROS_RESULTADOS_RESET_MS';
+const REGISTROS_RESET_PROPERTY = 'BOMBEROS_REGISTROS_RESET_MS';
 
 
 
-const DESTACAMENTOS = [
+// Comandos y dependencias tomados de la planilla oficial entregada.
+// Se conservaron las denominaciones de la planilla y se unificaron solamente
+// variantes evidentes de escritura de una misma dependencia.
+const COMANDOS_DEPENDENCIAS = {
+  'COBAM': [
+    'Ayudantía Dirección','Comando Zona 3','Dep. Flota','Dep. Logística',
+    'Departamento I','Departamento II','Depto. Sanidad',
+    'Dest. Aer. Laguna del Sauce','Dsto. Aero. Melilla','Desto. Belvedere',
+    'Desto. Biarritz','Desto. Canelones','Desto. Carrasco','Desto. Casavalle',
+    'Dsto. Centro Cordón','Desto. Ciudad del Plata','Dsto. Las Piedras',
+    'Desto. Libertad','Desto. Maroñas','Desto. Pando','Desto. Parque del Plata',
+    'Dsto. San Jacinto','Desto. San José','Desto. San Ramón','Desto. Santa Lucía',
+    'Desto. Solymar','Desto. Tala','Haz Mat','Jefe Región I CoBAM','Las Brujas',
+    'O.N.C','Planificación y Est.','Prevención','REGION 1','REGION 2 COBAM',
+    'REGION 3 COBAM','RR.PP','SYSO','Sala de Prot. Res.','Secretaria COBAM',
+    'Servicios Generales','Sumario'
+  ],
+  'CBI': [
+    'Desto. Aigua','Desto. Carmelo','Desto. Castillos','Desto. Chuy','Desto. Colonia',
+    'Desto. Dolores','Desto. Durazno','Desto. Florida','Desto. Fray Bentos',
+    'Desto. Jose Ignacio','Dest. José Enrique Rodó','Desto. Juan Lacaze',
+    'Desto. La Paloma','Desto. Maldonado','Desto. Minas de Corrales',
+    'Desto. Nueva Helvecia','Desto. Nueva Palmira','Desto. Palmita',
+    'Desto. Pan de Azucar','Desto. Paso de los Toros','Desto. Piriapolis',
+    'Desto. Rivera','Desto. Rocha','Desto. Rosario','Desto. San Carlos',
+    'Desto. San Gregorio de Polanco','Desto. Santa Teresa','Desto. Sarandi Grande',
+    'Desto. Sarandi del Yi','Desto. Tacuarembó','Desto. Tarariras','Desto. Tranqueras',
+    'Desto. Trinidad','Desto. Vichadero',
+    // Dependencias ya operativas en esta aplicación, bajo el comando CBI.
+    'Desto. Minas','Desto. Lascano','Desto. J.P. Varela','Desto. Treinta y Tres',
+    'Desto. Vergara','Desto. Río Branco','Desto. Melo','Desto. Fraile Muerto',
+    'Desto. Santa Clara'
+  ],
+  'CBE': ['A.I.C','Dpto. IDS','Haz Mat'],
+  'CD': ['Departamento I','Electricista','RR.PP','Sumario','TIC'],
+  'CSD': ['Bienes y Usos Generales','CCU','Departamento II','Depto. Sanidad','O.N.C']
+};
 
-  'Minas',
+const DESTACAMENTOS = Object.keys(COMANDOS_DEPENDENCIAS).reduce(function(lista, comando) {
+  return lista.concat(COMANDOS_DEPENDENCIAS[comando]);
+}, []);
 
-  'Lascano',
+const DESTACAMENTOS_ANTERIORES = {
+  'Minas':'Desto. Minas','Lascano':'Desto. Lascano','J.P. Varela':'Desto. J.P. Varela',
+  'Treinta y Tres':'Desto. Treinta y Tres','Vergara':'Desto. Vergara',
+  'Río Branco':'Desto. Río Branco','Melo':'Desto. Melo',
+  'Fraile Muerto':'Desto. Fraile Muerto','Santa Clara':'Desto. Santa Clara'
+};
 
-  'J.P. Varela',
+function normalizarDependencia_(dependencia) {
+  const valor = valor_(dependencia);
+  return DESTACAMENTOS_ANTERIORES[valor] || valor;
+}
 
-  'Treinta y Tres',
+function comandoDependencia_(dependencia) {
+  const dep = normalizarDependencia_(dependencia);
+  const comandos = Object.keys(COMANDOS_DEPENDENCIAS);
+  for (let i = 0; i < comandos.length; i++) {
+    if (COMANDOS_DEPENDENCIAS[comandos[i]].indexOf(dep) !== -1) return comandos[i];
+  }
+  return '';
+}
 
-  'Vergara',
-
-  'Río Branco',
-
-  'Melo',
-
-  'Fraile Muerto',
-
-  'Santa Clara'
-
-];
+function dependenciaValida_(comando, dependencia) {
+  const cmd = valor_(comando);
+  const dep = normalizarDependencia_(dependencia);
+  return !!(COMANDOS_DEPENDENCIAS[cmd] && COMANDOS_DEPENDENCIAS[cmd].indexOf(dep) !== -1);
+}
 
 
 
@@ -86,8 +135,8 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'yoyo-pitidos-reales-captura-18-2026-09-26',
-    acciones: ['confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion']
+    version: 'produccion-yoyo-omitir-y-luego-iniciar-2026-09-26',
+    acciones: ['confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
 
   });
 
@@ -161,6 +210,26 @@ function doPost(e) {
       case 'eliminarEvaluacion':
         validarSesionEvaluador_(body.token);
         result = eliminarEvaluacion_(data);
+        break;
+
+      case 'eliminarEvaluacionesFuncionario':
+        validarSesionEvaluador_(body.token);
+        result = eliminarEvaluacionesFuncionario_(data);
+        break;
+
+      case 'eliminarEvaluacionesDestacamento':
+        validarSesionEvaluador_(body.token);
+        result = eliminarEvaluacionesDestacamento_(data);
+        break;
+
+      case 'reiniciarTodasEvaluaciones':
+        validarSesionEvaluador_(body.token);
+        result = reiniciarTodasEvaluaciones_(data);
+        break;
+
+      case 'eliminarTodosLosRegistros':
+        validarSesionEvaluador_(body.token);
+        result = eliminarTodosLosRegistros_(data);
         break;
 
 
@@ -309,17 +378,18 @@ function json_(obj) {
 
 function claveSesionCompartida_(data) {
 
-  const dest = valor_(data.destacamento);
+  const dest = normalizarDependencia_(data.destacamento);
+  const comando = valor_(data.comando) || comandoDependencia_(dest);
 
   const prueba = valor_(data.prueba);
 
   const anio = Number(data.anio) || new Date().getFullYear();
 
-  if (!dest || DESTACAMENTOS.indexOf(dest) === -1) throw new Error('Destacamento no válido.');
+  if (!dependenciaValida_(comando, dest)) throw new Error('Comando o dependencia no válidos.');
 
   if (['Core','Sentadilla','Yo-Yo'].indexOf(prueba) === -1) throw new Error('Esta prueba no admite sesión compartida.');
 
-  return 'SESION_COMPARTIDA_' + anio + '_' + dest + '_' + prueba;
+  return 'SESION_COMPARTIDA_' + anio + '_' + comando + '_' + dest + '_' + prueba;
 
 }
 
@@ -355,7 +425,8 @@ function confirmarEvaluadorSesionCompartida_(data) {
 
       ses = {
 
-        id: Utilities.getUuid(), destacamento: valor_(data.destacamento),
+        id: Utilities.getUuid(), comando: valor_(data.comando) || comandoDependencia_(data.destacamento),
+        destacamento: normalizarDependencia_(data.destacamento),
 
         prueba: valor_(data.prueba), anio: Number(data.anio) || new Date().getFullYear(),
 
@@ -409,7 +480,11 @@ function iniciarCronometroSesionCompartida_(data) {
       throw new Error('Cada evaluador debe seleccionar al menos un funcionario antes de iniciar.');
     }
     registros.forEach(r => { if (r.estado === 'ASIGNADO') r.estado = 'EN_CURSO'; });
-    ses.inicioMs = Date.now(); ses.estado = 'ACTIVA'; ses.iniciadoPor = valor_(data.evaluador);
+    const ahora = Date.now();
+    ses.inicioMs = valor_(ses.prueba) === 'Yo-Yo' && ses.introduccionOmitida
+      ? ahora - Math.round(YOYO_AUDIO_START_SECONDS * 1000)
+      : ahora;
+    ses.estado = 'ACTIVA'; ses.iniciadoPor = valor_(data.evaluador);
     props.setProperty(key, JSON.stringify(ses));
     return Object.assign({}, ses, {serverNow:Date.now()});
   } finally { lock.releaseLock(); }
@@ -444,7 +519,8 @@ function validarDueñoCompartido_(ses, data) {
 
 function bloquearGuardadoCompartido_(data) {
   if (['Core','Sentadilla','Yo-Yo'].indexOf(valor_(data.prueba)) === -1) return;
-  const key = claveSesionCompartida_({destacamento:valor_(data.destacamento) || destacamentoFuncionario_(valor_(data.funcionarioId)), prueba:data.prueba, anio:data.anio});
+  const dest = normalizarDependencia_(data.destacamento || destacamentoFuncionario_(valor_(data.funcionarioId)));
+  const key = claveSesionCompartida_({comando:valor_(data.comando) || comandoDependencia_(dest), destacamento:dest, prueba:data.prueba, anio:data.anio});
   const raw = PropertiesService.getScriptProperties().getProperty(key);
   if (!raw) return;
   const ses = JSON.parse(raw), registro = (ses.funcionarios || {})[valor_(data.funcionarioId)];
@@ -454,6 +530,11 @@ function bloquearGuardadoCompartido_(data) {
 function destacamentoFuncionario_(id) {
   const persona = obtenerFuncionario_(getDb_(), id);
   return persona ? valor_(persona.destacamento || persona.dest) : '';
+}
+
+function comandoFuncionario_(id) {
+  const persona = obtenerFuncionario_(getDb_(), id);
+  return persona ? valor_(persona.comando) || comandoDependencia_(persona.destacamento || persona.dest) : '';
 }
 
 function modificarFuncionarioCompartido_(data, accion) {
@@ -635,10 +716,10 @@ function omitirIntroduccionYoyoCompartida_(data) {
     if (!raw) throw new Error('No hay sesión compartida del Yo-Yo.');
     const ses = JSON.parse(raw);
     validarDueñoCompartido_(ses, data);
-    if (ses.estado !== 'ACTIVA') throw new Error('Primero iniciá la sesión compartida.');
-    const now = Date.now(), elapsed = (now - Number(ses.inicioMs)) / 1000;
-    if (elapsed >= YOYO_AUDIO_START_SECONDS) throw new Error('La carrera ya comenzó; no se puede omitir la introducción.');
-    ses.inicioMs = now - Math.round(YOYO_AUDIO_START_SECONDS * 1000);
+    if (ses.estado === 'ACTIVA') throw new Error('La prueba ya fue iniciada; la introducción se omite antes de comenzar.');
+    if (ses.estado !== 'LISTA') throw new Error('Primero deben confirmar ambos evaluadores.');
+    const now = Date.now();
+    ses.introduccionOmitida = true;
     ses.introduccionOmitidaMs = now;
     ses.introduccionOmitidaPor = valor_(data.evaluador);
     props.setProperty(key, JSON.stringify(ses));
@@ -808,7 +889,7 @@ function setupDb_(ss) {
 
     'Presenta lesión','Lesión - cuál','Lesión afecta vida cotidiana/profesional','Tareas impedidas',
 
-    'Rehabilitación','Rehabilitación - detalle','Peso kg','Altura cm'
+    'Rehabilitación','Rehabilitación - detalle','Peso kg','Altura cm','Comando','Apellido'
 
   ]);
 
@@ -882,7 +963,23 @@ function ensureSheet_(ss, name, headers) {
 
 function registrarFuncionario_(data) {
 
-  const nombre = valor_(data.nombre);
+  const resetRegistrosMs = Number(PropertiesService.getScriptProperties().getProperty(REGISTROS_RESET_PROPERTY) || 0);
+
+  const registroCreadoMs = Number(data._clientCreatedMs || 0);
+
+  if (resetRegistrosMs && (!registroCreadoMs || registroCreadoMs < resetRegistrosMs)) {
+
+    throw new Error('Esta ficha pertenece a una versión anterior al reinicio general. Recargá la página y registrala nuevamente.');
+
+  }
+
+  let nombre = valor_(data.nombre);
+  let apellido = valor_(data.apellido);
+  if (!apellido && nombre) {
+    const anterior = separarNombre_(nombre);
+    nombre = anterior.nombre;
+    apellido = anterior.apellido;
+  }
 
   const ci = valor_(data.ci);
 
@@ -890,11 +987,13 @@ function registrarFuncionario_(data) {
 
   const genero = valor_(data.genero);
 
-  const destacamento = valor_(data.destacamento || data.dest);
+  const destacamento = normalizarDependencia_(data.destacamento || data.dest);
+  const comando = valor_(data.comando) || comandoDependencia_(destacamento);
 
 
 
   if (!nombre) throw new Error('Ingresá el nombre.');
+  if (!apellido) throw new Error('Ingresá el apellido.');
 
   if (!ci) throw new Error('Ingresá la CI.');
 
@@ -906,13 +1005,14 @@ function registrarFuncionario_(data) {
 
   if (!genero) throw new Error('Seleccioná el género.');
 
-  if (!destacamento) throw new Error('Seleccioná el destacamento.');
+  if (!comando) throw new Error('Seleccioná el comando.');
+  if (!destacamento) throw new Error('Seleccioná la dependencia.');
 
 
 
-  if (DESTACAMENTOS.indexOf(destacamento) === -1) {
+  if (!dependenciaValida_(comando, destacamento)) {
 
-    throw new Error('Destacamento no válido.');
+    throw new Error('La dependencia no pertenece al comando seleccionado.');
 
   }
 
@@ -1008,7 +1108,7 @@ function registrarFuncionario_(data) {
 
       valor_(data.tareasImpedidas),valor_(data.rehabilitacion),valor_(data.rehabilitacionDetalle),
 
-      numeroOVacio_(data.peso),numeroOVacio_(data.altura)
+      numeroOVacio_(data.peso),numeroOVacio_(data.altura),comando,apellido
 
     ]);
 
@@ -1068,13 +1168,18 @@ function cargarPanel_() {
 
     const rows = shF
 
-      .getRange(2, 1, shF.getLastRow() - 1, 28)
+      .getRange(2, 1, shF.getLastRow() - 1, 30)
 
       .getValues();
 
 
 
     rows.forEach(row => {
+      const dependencia = normalizarDependencia_(row[8]);
+      const comando = String(row[28] || '') || comandoDependencia_(dependencia);
+      const nombreRegistrado = String(row[3] || '');
+      const apellidoRegistrado = String(row[29] || '');
+      const nombreAnterior = apellidoRegistrado ? {nombre:nombreRegistrado, apellido:apellidoRegistrado} : separarNombre_(nombreRegistrado);
 
       people.push({
 
@@ -1082,7 +1187,9 @@ function cargarPanel_() {
 
         grado: String(row[2] || ''),
 
-        nombre: String(row[3] || ''),
+        nombre: [nombreAnterior.nombre, nombreAnterior.apellido].filter(Boolean).join(' '),
+        nombreSolo: nombreAnterior.nombre,
+        apellido: nombreAnterior.apellido,
 
         ci: String(row[4] || ''),
 
@@ -1092,9 +1199,10 @@ function cargarPanel_() {
 
         telefono: String(row[7] || ''),
 
-        destacamento: String(row[8] || ''),
+        comando: comando,
+        destacamento: dependencia,
 
-        dest: String(row[8] || ''),
+        dest: dependencia,
 
         ingreso: fechaIso_(row[9]),
 
@@ -1222,6 +1330,7 @@ function cargarPanel_() {
 
   return {
 
+    comandos: COMANDOS_DEPENDENCIAS,
     destacamentos: DESTACAMENTOS,
 
     people: people,
@@ -1251,8 +1360,9 @@ function eliminarEvaluacion_(data) {
   if (pruebasValidas.indexOf(prueba) === -1) throw new Error('Prueba no válida.');
 
   if (['Core','Sentadilla','Yo-Yo'].indexOf(prueba) !== -1) {
-    const destacamento = valor_(data.destacamento) || destacamentoFuncionario_(funcionarioId);
-    const key = claveSesionCompartida_({destacamento:destacamento, prueba:prueba, anio:anio});
+    const destacamento = normalizarDependencia_(data.destacamento || destacamentoFuncionario_(funcionarioId));
+    const comando = valor_(data.comando) || comandoFuncionario_(funcionarioId) || comandoDependencia_(destacamento);
+    const key = claveSesionCompartida_({comando:comando, destacamento:destacamento, prueba:prueba, anio:anio});
     const raw = PropertiesService.getScriptProperties().getProperty(key);
     if (raw) {
       const ses = JSON.parse(raw);
@@ -1275,6 +1385,151 @@ function eliminarEvaluacion_(data) {
   } finally { lock.releaseLock(); }
 }
 
+/** Elimina todas las evaluaciones históricas de un funcionario, pero conserva su ficha. */
+function eliminarEvaluacionesFuncionario_(data) {
+  const funcionarioId = valor_(data.funcionarioId);
+  if (!funcionarioId) throw new Error('Falta el funcionario.');
+  if (valor_(data.confirmacion) !== 'ELIMINAR FUNCIONARIO') throw new Error('Confirmación de seguridad no válida.');
+
+  const ss = getDb_();
+  const persona = obtenerFuncionario_(ss, funcionarioId);
+  if (!persona) throw new Error('No se encontró el funcionario.');
+  asegurarSinSesionActiva_({funcionarioId:funcionarioId});
+
+  const eliminados = filtrarResultados_(ss, function(row) {
+    return String(row[2] || '') !== funcionarioId;
+  });
+  limpiarSesionesCompartidas_({funcionarioId:funcionarioId});
+  return {eliminados:eliminados, funcionarioId:funcionarioId, nombre:persona.nombre || ''};
+}
+
+/** Elimina todas las evaluaciones históricas de un destacamento, sin borrar funcionarios. */
+function eliminarEvaluacionesDestacamento_(data) {
+  const destacamento = normalizarDependencia_(data.destacamento);
+  const comando = valor_(data.comando) || comandoDependencia_(destacamento);
+  if (!dependenciaValida_(comando, destacamento)) throw new Error('Comando o dependencia no válidos.');
+  if (valor_(data.confirmacion) !== destacamento) throw new Error('Confirmación de seguridad no válida.');
+
+  const ss = getDb_();
+  const ids = idsFuncionariosDestacamento_(ss, destacamento, comando);
+  const eliminados = filtrarResultados_(ss, function(row) {
+    return !ids[String(row[2] || '')];
+  });
+  limpiarSesionesCompartidas_({comando:comando, destacamento:destacamento});
+  return {eliminados:eliminados, comando:comando, destacamento:destacamento, funcionarios:Object.keys(ids).length};
+}
+
+/** Reinicio general para pasar de pruebas a operación real. Conserva todas las fichas. */
+function reiniciarTodasEvaluaciones_(data) {
+  if (valor_(data.confirmacion) !== 'REINICIAR TODO') throw new Error('Confirmación de seguridad no válida.');
+  const ss = getDb_();
+  const eliminados = filtrarResultados_(ss, function() { return false; });
+  limpiarSesionesCompartidas_({todas:true});
+  PropertiesService.getScriptProperties().setProperty(RESULTADOS_RESET_PROPERTY, String(Date.now()));
+  return {eliminados:eliminados, reiniciado:true};
+}
+
+/**
+ * Reinicio absoluto: elimina funcionarios, evaluaciones y sesiones compartidas.
+ * Conserva las hojas, encabezados y configuración de la aplicación.
+ */
+function eliminarTodosLosRegistros_(data) {
+  if (valor_(data.confirmacion) !== 'ELIMINAR TODOS LOS REGISTROS') {
+    throw new Error('Confirmación de seguridad no válida.');
+  }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const ss = getDb_();
+    const shF = ss.getSheetByName('Funcionarios');
+    const shR = ss.getSheetByName('Resultados');
+    const funcionariosEliminados = shF && shF.getLastRow() > 1 ? shF.getLastRow() - 1 : 0;
+    const resultadosEliminados = shR && shR.getLastRow() > 1 ? shR.getLastRow() - 1 : 0;
+
+    if (funcionariosEliminados) {
+      shF.getRange(2, 1, funcionariosEliminados, Math.max(30, shF.getLastColumn())).clearContent();
+    }
+    if (resultadosEliminados) {
+      shR.getRange(2, 1, resultadosEliminados, Math.max(10, shR.getLastColumn())).clearContent();
+    }
+
+    limpiarSesionesCompartidas_({todas:true});
+    const ahora = String(Date.now());
+    const props = PropertiesService.getScriptProperties();
+    props.setProperty(RESULTADOS_RESET_PROPERTY, ahora);
+    props.setProperty(REGISTROS_RESET_PROPERTY, ahora);
+    SpreadsheetApp.flush();
+    return {reiniciado:true, funcionariosEliminados:funcionariosEliminados, resultadosEliminados:resultadosEliminados};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Conserva las filas para las que filtro(row) devuelve true y retorna cuántas eliminó.
+ * Se reescribe el bloque bajo el encabezado para que la operación sea rápida y atómica.
+ */
+function filtrarResultados_(ss, filtro) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const sh = ss.getSheetByName('Resultados');
+    if (!sh || sh.getLastRow() <= 1) return 0;
+    const lastRow = sh.getLastRow();
+    const lastCol = Math.max(10, sh.getLastColumn());
+    const rows = sh.getRange(2, 1, lastRow - 1, lastCol).getValues();
+    const conservar = rows.filter(filtro);
+    sh.getRange(2, 1, lastRow - 1, lastCol).clearContent();
+    if (conservar.length) sh.getRange(2, 1, conservar.length, lastCol).setValues(conservar);
+    SpreadsheetApp.flush();
+    return rows.length - conservar.length;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function idsFuncionariosDestacamento_(ss, destacamento, comando) {
+  const ids = {};
+  const sh = ss.getSheetByName('Funcionarios');
+  if (!sh || sh.getLastRow() <= 1) return ids;
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 30).getValues();
+  rows.forEach(function(row) {
+    const dep = normalizarDependencia_(row[8]);
+    const cmd = String(row[28] || '') || comandoDependencia_(dep);
+    if (dep === destacamento && (!comando || cmd === comando)) ids[String(row[0] || '')] = true;
+  });
+  return ids;
+}
+
+function asegurarSinSesionActiva_(scope) {
+  const props = PropertiesService.getScriptProperties().getProperties();
+  Object.keys(props).forEach(function(key) {
+    if (key.indexOf('SESION_COMPARTIDA_') !== 0) return;
+    let ses;
+    try { ses = JSON.parse(props[key]); } catch (err) { return; }
+    if (!ses || ses.estado !== 'ACTIVA') return;
+    const afecta = scope.funcionarioId
+      ? !!(ses.funcionarios && ses.funcionarios[scope.funcionarioId])
+      : scope.destacamento ? ses.destacamento === scope.destacamento && (!scope.comando || ses.comando === scope.comando) : true;
+    if (afecta) throw new Error('Hay una sesión compartida activa. Finalizala antes de eliminar estos registros.');
+  });
+}
+
+function limpiarSesionesCompartidas_(scope) {
+  const service = PropertiesService.getScriptProperties();
+  const props = service.getProperties();
+  Object.keys(props).forEach(function(key) {
+    if (key.indexOf('SESION_COMPARTIDA_') !== 0) return;
+    let ses;
+    try { ses = JSON.parse(props[key]); } catch (err) { ses = null; }
+    const borrar = scope.todas ||
+      (scope.destacamento && ses && ses.destacamento === scope.destacamento && (!scope.comando || ses.comando === scope.comando)) ||
+      (scope.funcionarioId && ses && ses.funcionarios && ses.funcionarios[scope.funcionarioId]);
+    if (borrar) service.deleteProperty(key);
+  });
+}
+
 
 
 function guardarResultado_(data) {
@@ -1282,6 +1537,12 @@ function guardarResultado_(data) {
   const funcionarioId = valor_(data.funcionarioId);
 
   const prueba = valor_(data.prueba);
+
+  const resetMs = Number(PropertiesService.getScriptProperties().getProperty(RESULTADOS_RESET_PROPERTY) || 0);
+  const clientCreatedMs = Number(data._clientCreatedMs || 0);
+  if (resetMs && clientCreatedMs && clientCreatedMs < resetMs) {
+    throw new Error('Este resultado pendiente pertenece a la etapa anterior al reinicio y no se guardó.');
+  }
 
 
 
@@ -1521,7 +1782,7 @@ function guardarResultado_(data) {
 
    C = Malo (o nota 1-4)
 
-   NO APTO se mantiene manual.
+   NO APTO se aplica cuando la tabla oficial define un mínimo.
 
    ========================================================= */
 
@@ -1549,13 +1810,10 @@ function clasificarPrueba_(prueba, r, genero, edad) {
 
 
 
-    // Tabla: Excelente >=115" H / >=73" M.
+    // Fórmulas de la planilla: H 115/75/35; M 73/48/20.
+    if (masculino) return { categoria: s >= 115 ? 'A' : (s >= 75 ? 'B' : (s >= 35 ? 'C' : 'NO APTO')), nota: '' };
 
-    // Muy Bueno + Bueno = B. Malo = C.
-
-    if (masculino) return { categoria: s >= 115 ? 'A' : (s >= 75 ? 'B' : 'C'), nota: '' };
-
-    return { categoria: s >= 73 ? 'A' : (s >= 48 ? 'B' : 'C'), nota: '' };
+    return { categoria: s >= 73 ? 'A' : (s >= 48 ? 'B' : (s >= 20 ? 'C' : 'NO APTO')), nota: '' };
 
   }
 
@@ -1571,11 +1829,11 @@ function clasificarPrueba_(prueba, r, genero, edad) {
 
 
 
-    // Tabla: Excelente >=52 H / >=34 M.
+    // Fórmulas de la planilla: Excelente >=49 H / >=34 M.
 
     // Muy Bueno + Bueno = B. Malo = C.
 
-    if (masculino) return { categoria: n >= 52 ? 'A' : (n >= 20 ? 'B' : 'C'), nota: '' };
+    if (masculino) return { categoria: n >= 49 ? 'A' : (n >= 20 ? 'B' : 'C'), nota: '' };
 
     return { categoria: n >= 34 ? 'A' : (n >= 10 ? 'B' : 'C'), nota: '' };
 
@@ -1669,20 +1927,28 @@ function obtenerFuncionario_(ss, funcionarioId) {
 
 
 
-  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 16).getValues();
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 30).getValues();
 
   for (let i = 0; i < rows.length; i++) {
 
     if (String(rows[i][0]) === String(funcionarioId)) {
 
+      const partesNombre = String(rows[i][29] || '')
+        ? {nombre:String(rows[i][3] || ''), apellido:String(rows[i][29] || '')}
+        : separarNombre_(String(rows[i][3] || ''));
       return {
 
         id: String(rows[i][0] || ''),
 
+        nombre: [partesNombre.nombre, partesNombre.apellido].filter(Boolean).join(' '),
+        nombreSolo: partesNombre.nombre,
+        apellido: partesNombre.apellido,
+
         nacimiento: fechaIso_(rows[i][5]),
 
         genero: String(rows[i][6] || ''),
-        destacamento: String(rows[i][8] || '')
+        destacamento: normalizarDependencia_(rows[i][8]),
+        comando: String(rows[i][28] || '') || comandoDependencia_(rows[i][8])
 
       };
 
@@ -1791,8 +2057,8 @@ function recalcularResultadosExistentes() {
 function generarExcel_(data) {
 
   const anio = Number(data.anio) || new Date().getFullYear();
-
-  const destacamentoFiltro = valor_(data.destacamento);
+  const comandoFiltro = valor_(data.comando);
+  const destacamentoFiltro = normalizarDependencia_(data.destacamento);
 
   const ss = getDb_();
 
@@ -1804,7 +2070,7 @@ function generarExcel_(data) {
 
   const funcionarios = shF.getLastRow() > 1
 
-    ? shF.getRange(2, 1, shF.getLastRow() - 1, 16).getValues()
+    ? shF.getRange(2, 1, shF.getLastRow() - 1, 30).getValues()
 
     : [];
 
@@ -1831,7 +2097,7 @@ function generarExcel_(data) {
     if (!porPersona[id]) porPersona[id] = {};
 
     porPersona[id][prueba] = {
-
+      fecha: r[0],
       segundos: r[4], repeticiones: r[5], metros: r[6],
 
       edad: r[7], nota: r[8], categoria: String(r[9] || '')
@@ -1842,27 +2108,11 @@ function generarExcel_(data) {
 
 
 
-  const headers = [
-
-    'NOMBRE','EDAD','GÉNERO','DESTACAMENTO',
-
-    'FLEXIBILIDAD','CORE - TIEMPO','CORE - CATEGORÍA',
-
-    'FLEXIONES - REPETICIONES','FLEXIONES - CATEGORÍA',
-
-    'SENTADILLA - TIEMPO','SENTADILLA - CATEGORÍA',
-
-    'YO-YO - METROS','YO-YO - NOTA','YO-YO - CATEGORÍA'
-
-  ];
-
-
-
-  const funcionariosFiltrados = destacamentoFiltro
-
-    ? funcionarios.filter(f => String(f[8] || '') === destacamentoFiltro)
-
-    : funcionarios;
+  const funcionariosFiltrados = funcionarios.filter(function(f) {
+    const dep = normalizarDependencia_(f[8]);
+    const cmd = String(f[28] || '') || comandoDependencia_(dep);
+    return (!destacamentoFiltro || dep === destacamentoFiltro) && (!comandoFiltro || cmd === comandoFiltro);
+  });
 
 
 
@@ -1871,44 +2121,36 @@ function generarExcel_(data) {
     const id = String(f[0] || '');
 
     const r = porPersona[id] || {};
+    const dependencia = normalizarDependencia_(f[8]);
+    const comando = String(f[28] || '') || comandoDependencia_(dependencia);
+    const nombre = String(f[29] || '')
+      ? {nombre:String(f[3] || ''), apellido:String(f[29] || '')}
+      : separarNombre_(String(f[3] || ''));
+    const edad = edadResultado_(r, f[5]);
+    const altura = Number(f[27]) > 3 ? Number(f[27]) / 100 : numeroOVacio_(f[27]);
+    const peso = numeroOVacio_(f[26]);
+    const altura2 = altura === '' ? '' : Math.round(altura * altura * 10000) / 10000;
+    const imc = peso !== '' && altura2 ? Math.round((peso / altura2) * 100) / 100 : '';
+    const fechaPrueba = fechaUltimoResultado_(r);
 
     return [
-
-      String(f[3] || ''), calcularEdad_(f[5]), String(f[6] || ''), String(f[8] || ''),
-
-      r['Flexibilidad'] ? r['Flexibilidad'].categoria : '',
-
-      r['Core'] ? r['Core'].segundos : '', r['Core'] ? r['Core'].categoria : '',
-
-      r['Flexiones'] ? r['Flexiones'].repeticiones : '', r['Flexiones'] ? r['Flexiones'].categoria : '',
-
-      r['Sentadilla'] ? r['Sentadilla'].segundos : '', r['Sentadilla'] ? r['Sentadilla'].categoria : '',
-
-      r['Yo-Yo'] ? r['Yo-Yo'].metros : '', r['Yo-Yo'] ? r['Yo-Yo'].nota : '', r['Yo-Yo'] ? r['Yo-Yo'].categoria : ''
-
+      fechaPlanilla_(fechaPrueba), comando, dependencia, String(f[2] || ''), nombre.nombre, nombre.apellido,
+      String(f[4] || ''), String(f[7] || ''), edad, fechaPlanilla_(f[5]), fechaPlanilla_(f[9]),
+      f[9] ? calcularEdad_(f[9]) : '', peso, altura, altura2, imc, clasificarImc_(imc), '', '', String(f[6] || ''),
+      valorResultado_(r, 'Core', 'segundos'), valorResultado_(r, 'Core', 'categoria'),
+      valorResultado_(r, 'Flexibilidad', 'categoria'),
+      valorResultado_(r, 'Flexiones', 'repeticiones'), valorResultado_(r, 'Flexiones', 'categoria'),
+      valorResultado_(r, 'Sentadilla', 'segundos'), valorResultado_(r, 'Sentadilla', 'categoria'),
+      valorResultado_(r, 'Yo-Yo', 'metros'), valorResultado_(r, 'Yo-Yo', 'categoria'),
+      comorbilidadFuncionario_(f), estadoDocumento_(f[10]), estadoDocumento_(f[12])
     ];
 
+  }).sort(function(a, b) {
+    return String(a[1]).localeCompare(String(b[1]), 'es') ||
+      String(a[2]).localeCompare(String(b[2]), 'es') ||
+      String(a[5]).localeCompare(String(b[5]), 'es') ||
+      String(a[4]).localeCompare(String(b[4]), 'es');
   });
-
-
-
-  // CSV UTF-8 con separador punto y coma: Excel lo abre directamente y
-
-  // no requiere UrlFetchApp, Drive ni permisos externos.
-
-  const csvEscape = v => {
-
-    const t = String(v == null ? '' : v).replace(/"/g, '""');
-
-    return /[;"\r\n]/.test(t) ? '"' + t + '"' : t;
-
-  };
-
-  const csv = '\uFEFF' + [headers].concat(rows)
-
-    .map(row => row.map(csvEscape).join(';'))
-
-    .join('\r\n');
 
 
 
@@ -1918,9 +2160,8 @@ function generarExcel_(data) {
 
     : 'GENERAL';
 
-  const nombre = 'Evaluaciones_Fisicas_' + anio + '_' + etiqueta + '.csv';
-
-  const blob = Utilities.newBlob(csv, 'text/csv;charset=utf-8', nombre);
+  const nombre = 'Evaluaciones_Fisicas_' + anio + '_' + etiqueta + '.xlsx';
+  const blob = crearXlsxResultados_(rows, nombre, anio);
 
 
 
@@ -1928,7 +2169,7 @@ function generarExcel_(data) {
 
     nombre: nombre,
 
-    mimeType: 'text/csv;charset=utf-8',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 
     base64: Utilities.base64Encode(blob.getBytes()),
 
@@ -1936,10 +2177,142 @@ function generarExcel_(data) {
 
     anio: anio,
 
+    comando: comandoFiltro || 'TODOS',
     destacamento: destacamentoFiltro || 'GENERAL'
 
   };
 
+}
+
+function valorResultado_(resultados, prueba, campo) {
+  return resultados[prueba] && resultados[prueba][campo] !== undefined ? resultados[prueba][campo] : '';
+}
+
+function edadResultado_(resultados, nacimiento) {
+  const pruebas = Object.keys(resultados);
+  for (let i = 0; i < pruebas.length; i++) {
+    const edad = resultados[pruebas[i]].edad;
+    if (edad !== '' && edad !== undefined) return Number(edad);
+  }
+  return calcularEdad_(nacimiento);
+}
+
+function fechaUltimoResultado_(resultados) {
+  let ultima = null;
+  Object.keys(resultados).forEach(function(prueba) {
+    const fecha = resultados[prueba].fecha;
+    if (!fecha) return;
+    const d = fecha instanceof Date ? fecha : new Date(fecha);
+    if (!isNaN(d.getTime()) && (!ultima || d > ultima)) ultima = d;
+  });
+  return ultima;
+}
+
+function separarNombre_(texto) {
+  const partes = valor_(texto).split(/\s+/).filter(Boolean);
+  if (partes.length < 2) return {nombre:partes[0] || '', apellido:''};
+  return {nombre:partes.slice(0, -1).join(' '), apellido:partes[partes.length - 1]};
+}
+
+function fechaPlanilla_(valor) {
+  if (!valor) return '';
+  const d = valor instanceof Date ? valor : new Date(valor);
+  if (isNaN(d.getTime())) return String(valor);
+  return Utilities.formatDate(d, Session.getScriptTimeZone() || 'America/Montevideo', 'dd/MM/yyyy');
+}
+
+function clasificarImc_(imc) {
+  const n = Number(imc);
+  if (!isFinite(n) || n <= 0) return '';
+  if (n < 18.5) return 'Bajo peso';
+  if (n < 25) return 'Normal';
+  if (n < 30) return 'Sobrepeso';
+  if (n < 35) return 'Obesidad I';
+  if (n < 40) return 'Obesidad II';
+  return 'Obesidad III';
+}
+
+function estadoDocumento_(valor) {
+  const t = valor_(valor).toLowerCase();
+  if (t === 'sí' || t === 'si' || t === 'vigente') return 'VIGENTE';
+  if (t === 'no' || t === 'no vigente') return 'NO VIGENTE';
+  return valor_(valor);
+}
+
+function comorbilidadFuncionario_(f) {
+  const datos = [];
+  if (/^(sí|si)$/i.test(valor_(f[16]))) datos.push(valor_(f[17]) || 'Enfermedad crónica');
+  if (/^(sí|si)$/i.test(valor_(f[18]))) datos.push(valor_(f[19]) || 'Antecedente de enfermedad');
+  if (/^(sí|si)$/i.test(valor_(f[20]))) datos.push(valor_(f[21]) || 'Lesión');
+  return datos.length ? datos.join(' · ') : 'No presenta';
+}
+
+function columnaExcel_(numero) {
+  let n = numero, texto = '';
+  while (n > 0) { n--; texto = String.fromCharCode(65 + (n % 26)) + texto; n = Math.floor(n / 26); }
+  return texto;
+}
+
+function xmlEscape_(valor) {
+  return String(valor == null ? '' : valor).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+function celdaXlsx_(fila, columna, valor, estilo) {
+  const ref = columnaExcel_(columna) + fila;
+  const s = estilo ? ' s="' + estilo + '"' : '';
+  if (valor === '' || valor === null || valor === undefined) return '<c r="' + ref + '"' + s + '/>';
+  if (typeof valor === 'number' && isFinite(valor)) return '<c r="' + ref + '"' + s + '><v>' + valor + '</v></c>';
+  return '<c r="' + ref + '" t="inlineStr"' + s + '><is><t xml:space="preserve">' + xmlEscape_(valor) + '</t></is></c>';
+}
+
+function estiloCategoriaXlsx_(valor) {
+  const t = valor_(valor).toUpperCase();
+  return t === 'A' ? 5 : (t === 'B' ? 6 : (t === 'C' ? 7 : (t === 'NO APTO' ? 8 : 4)));
+}
+
+function crearXlsxResultados_(rows, nombre, anio) {
+  // Orden A–AF idéntico a la hoja TABLA RESULTADOS de la planilla oficial.
+  const headers = ['Fecha Prueba','Comando','Dependencia','Grado','Nombre','Apellido','Cédula','CELULAR','Edad de evaluación','F. Nacimiento','Fecha Ingreso','Años de servicio','Peso','Altura (m)','Altura²','IMC','Clasificación IMC','REPOSO','Máxima','SEXO','CORE (seg.)','','Flexibilidad / OFD','Flexiones (MMSS)','Categoría MMSS','Sentadilla isométrica (MMII)','Categoría MMII','Yo-Yo (m)','Categoría Yo-Yo','Comorbilidad','Carné de salud','Ergometría'];
+  const grupos = {17:'ESTADO FÍSICO',18:'FRECUENCIA CARDIACA',21:'CORE',23:'Flexibilidad',24:'R. Muscular (MMSS)',26:'R. Muscular (MMII)',28:'CAPACIDAD AERÓBICA'};
+  const categorias = {22:true,23:true,25:true,27:true,29:true};
+  let sheetRows = '<row r="1" ht="30" customHeight="1">' + celdaXlsx_(1,1,'',1) + '</row>';
+  let grupoCeldas = '';
+  for (let c = 1; c <= 32; c++) grupoCeldas += celdaXlsx_(2,c,grupos[c] || '',2);
+  sheetRows += '<row r="2" ht="25" customHeight="1">' + grupoCeldas + '</row>';
+  let headerCeldas = '';
+  headers.forEach(function(h, i) { headerCeldas += celdaXlsx_(3,i + 1,h,3); });
+  sheetRows += '<row r="3" ht="42" customHeight="1">' + headerCeldas + '</row>';
+  rows.forEach(function(row, i) {
+    const numeroFila = i + 4;
+    let celdas = '';
+    row.forEach(function(valor, j) { celdas += celdaXlsx_(numeroFila,j + 1,valor,categorias[j + 1] ? estiloCategoriaXlsx_(valor) : 4); });
+    sheetRows += '<row r="' + numeroFila + '">' + celdas + '</row>';
+  });
+  const lastRow = Math.max(3, rows.length + 3);
+  const widths = [13,12,25,14,22,18,13,14,18,14,14,16,10,12,11,10,18,11,11,12,13,17,18,18,17,24,17,13,17,28,18,16];
+  let cols = '<cols>';
+  widths.forEach(function(w,i){ cols += '<col min="' + (i+1) + '" max="' + (i+1) + '" width="' + w + '" customWidth="1"/>'; });
+  cols += '</cols>';
+  const sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<sheetViews><sheetView workbookViewId="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' +
+    '<sheetFormatPr defaultRowHeight="18"/>' + cols + '<sheetData>' + sheetRows + '</sheetData>' +
+    '<autoFilter ref="A3:AF' + lastRow + '"/><mergeCells count="6"><mergeCell ref="A1:AF1"/><mergeCell ref="R2:S2"/><mergeCell ref="U2:V2"/><mergeCell ref="X2:Y2"/><mergeCell ref="Z2:AA2"/><mergeCell ref="AB2:AC2"/></mergeCells></worksheet>';
+  const stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="16"/><name val="Calibri"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="10"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="8"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF7A1823"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF202020"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFC6EFCE"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDDEBF7"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE699"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFC7CE"/></patternFill></fill></fills>' +
+    '<borders count="2"><border/><border><left style="thin"><color rgb="FFD9D9D9"/></left><right style="thin"><color rgb="FFD9D9D9"/></right><top style="thin"><color rgb="FFD9D9D9"/></top><bottom style="thin"><color rgb="FFD9D9D9"/></bottom></border></borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="9">' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0"/><xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0"/><xf numFmtId="0" fontId="0" fillId="6" borderId="1" xfId="0"/><xf numFmtId="0" fontId="0" fillId="7" borderId="1" xfId="0"/></cellXfs>' +
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const files = [
+    Utilities.newBlob('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>','application/xml','[Content_Types].xml'),
+    Utilities.newBlob('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>','application/xml','_rels/.rels'),
+    Utilities.newBlob('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="TABLA RESULTADOS" sheetId="1" r:id="rId1"/></sheets></workbook>','application/xml','xl/workbook.xml'),
+    Utilities.newBlob('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>','application/xml','xl/_rels/workbook.xml.rels'),
+    Utilities.newBlob(stylesXml,'application/xml','xl/styles.xml'),
+    Utilities.newBlob(sheetXml,'application/xml','xl/worksheets/sheet1.xml')
+  ];
+  return Utilities.zip(files, nombre).setContentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 }
 
 

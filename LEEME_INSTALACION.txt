@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   yoyo-pitidos-reales-captura-18-2026-09-26
+   produccion-yoyo-omitir-y-luego-iniciar-2026-09-26
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -39,8 +39,9 @@ YO-YO TEST
 - Si el navegador del segundo teléfono bloquea la reproducción automática, debe tocar ACTIVAR AUDIO SINCRONIZADO; el audio se alinea con la sesión en curso.
 - En modo individual, INICIAR reproduce la pista y PAUSAR detiene tanto el audio como el avance del test.
 - En modo compartido no se permite que un solo evaluador pause o reinicie la pista para evitar desincronizar al compañero.
-- OMITIR INTRODUCCIÓN lleva directamente al comienzo de la carrera. En modo individual puede usarse incluso antes de pulsar INICIAR.
-- En modo compartido se habilita después del inicio de la sesión y antes de terminar la introducción; cualquiera de los evaluadores puede activarlo y ambos dispositivos saltan al mismo punto.
+- OMITIR INTRODUCCIÓN prepara la pista en el primer pitido, pero no inicia la prueba automáticamente.
+- En modo individual, después de omitir la introducción se debe pulsar INICIAR manualmente.
+- En modo compartido se omite antes de comenzar; luego cualquiera de los evaluadores pulsa INICIAR TIEMPO PARA LOS DOS y recién ahí se inicia sincronizada en ambos dispositivos.
 - La introducción termina aproximadamente a los 2:27,22. El contador usa las marcas medidas de los pitidos del MP3, no intervalos teóricos constantes.
 - Se cuentan 221 recorridos de 20 m (máximo 4.420 m). La señal final de cierre no agrega otro recorrido.
 - El salto de introducción usa la marca audible del primer pitido.
@@ -48,11 +49,24 @@ YO-YO TEST
 - El tiempo guardado corresponde solamente a la carrera y no incluye la introducción.
 - Primera falta: el funcionario continúa.
 - Segunda falta: distancia, tiempo, nota y categoría aparecen al tocar el funcionario. El estado CAPTURADO / GUARDANDO indica que la planilla aún no confirmó; luego cambia a GUARDADO.
+- Un resultado de Yo-Yo ya guardado no puede actualizarse directamente. Primero debe eliminarse y luego se toma una evaluación nueva desde cero.
 - La tabla se aplica desde los 18 años. Los 18 y 19 años usan el primer tramo etario de la tabla cargada (hasta 29 años). Por debajo de 20 m se muestra Nota 0 / Categoría C.
 
 REGISTRO DEL FUNCIONARIO
+- Nombre y apellido se ingresan en campos separados para que el Excel los coloque correctamente en sus columnas oficiales.
 - Fecha de nacimiento ingresada como Día, Mes y Año separados; se valida la fecha real (por ejemplo, se rechaza 31/02).
 - Se guarda en formato ISO para calcular correctamente la edad y se muestra como DD/MM/AAAA en la ficha.
+- Primero se selecciona uno de los comandos oficiales: COBAM, CBI, CBE, CD o CSD.
+- El campo Dependencia muestra únicamente las dependencias que pertenecen al comando elegido.
+- El panel del evaluador usa la misma selección Comando > Dependencia.
+
+EXCEL DE RESULTADOS
+- La descarga genera un archivo .xlsx real con la hoja TABLA RESULTADOS.
+- Mantiene la estructura de la planilla oficial: datos personales, IMC, Core, flexibilidad, flexiones, sentadilla, Yo-Yo, comorbilidad, carné de salud y ergometría.
+- Los encabezados están agrupados y las categorías A, B, C y NO APTO se muestran con colores.
+- El Excel de la dependencia filtra también por comando, evitando mezclar dependencias homónimas.
+- El Excel general consolida todos los comandos y dependencias.
+- Las columnas se exportan en el orden oficial A–AF mostrado en la planilla: Fecha Prueba, Comando, Dependencia, Grado, Nombre, Apellido, Cédula, Celular, datos personales, estado físico y resultados.
 
 ELIMINAR EVALUACIONES
 - Cada resultado guardado muestra ELIMINAR EVALUACIÓN ANTERIOR.
@@ -61,6 +75,11 @@ ELIMINAR EVALUACIONES
 - Las demás pruebas y los resultados de otros años no se modifican.
 - En Core, Sentadilla y Yo-Yo debe finalizarse la sesión compartida activa antes de eliminar.
 - Después de eliminar, el funcionario queda disponible para evaluarse nuevamente desde cero.
+- Desde la ficha individual puede eliminarse todo el historial de evaluaciones de ese funcionario sin borrar su ficha.
+- Desde el panel del destacamento puede eliminarse todo el historial de evaluaciones de ese destacamento sin borrar sus funcionarios.
+- REINICIAR TODAS LAS EVALUACIONES borra todos los resultados de todos los años y limpia las sesiones compartidas, pero conserva todas las fichas.
+- ELIMINAR TODOS LOS REGISTROS EN GENERAL realiza un reinicio absoluto: borra fichas de funcionarios, evaluaciones y sesiones compartidas. Conserva solamente las hojas, encabezados y configuración.
+- Los borrados masivos requieren escribir una confirmación exacta para evitar accidentes.
 
 API CONFIGURADA
 https://script.google.com/macros/s/AKfycbwMBHKx-Zj3ambN3xRz8TrynGTZ2jt5vAdFn5jqZ_R3DElw2EZ5gWTMBWrCsn0ggpcGSg/exec
