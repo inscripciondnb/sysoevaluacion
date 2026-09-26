@@ -408,6 +408,9 @@ h1,.hero-title{font-weight:800!important}
   </div>
 </div>
 
+<div id="excelDownloadArea" style="display:none;position:fixed;left:12px;right:12px;bottom:58px;z-index:1300;text-align:center">
+  <a id="excelDownloadLink" class="btn primary" style="display:inline-flex;margin:0;max-width:520px;width:100%;text-decoration:none" download>⬇ DESCARGAR EXCEL AHORA</a>
+</div>
 <div id="netStatus" class="net-status online">En línea</div>
 <div id="msg" class="msg hidden"></div>
 
@@ -658,6 +661,9 @@ async function generarExcel(tipo){
    if(!navigator.onLine)throw new Error('Para generar el Excel necesitás conexión a internet.');
    const esDest=tipo==='destacamento';
    if(esDest&&!currentStation)throw new Error('Primero seleccioná un destacamento.');
+
+   const area=document.getElementById('excelDownloadArea');
+   area.style.display='none';
    msg(esDest?'Generando Excel de '+currentStation+'...':'Generando Excel general...','ok');
 
    const payload={anio:new Date().getFullYear()};
@@ -665,7 +671,7 @@ async function generarExcel(tipo){
 
    const r=await api('generarExcel',payload);
    const x=r.data||r;
-   if(!x.base64)throw new Error('No se recibió el archivo Excel.');
+   if(!x.base64)throw new Error('El servidor no devolvió el archivo Excel.');
 
    const bin=atob(x.base64);
    const bytes=new Uint8Array(bin.length);
@@ -673,15 +679,24 @@ async function generarExcel(tipo){
 
    const blob=new Blob([bytes],{type:x.mimeType||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
    const url=URL.createObjectURL(blob);
-   const a=document.createElement('a');
-   a.href=url;
-   a.download=x.nombre||'Evaluaciones_Fisicas.xlsx';
-   document.body.appendChild(a);
-   a.click();
-   a.remove();
-   setTimeout(()=>URL.revokeObjectURL(url),3000);
 
-   msg('Excel descargado: '+x.filas+' funcionarios · '+x.destacamento,'ok');
+   // En celulares (especialmente iPhone) una descarga automática iniciada
+   // después de esperar al servidor puede ser bloqueada. Por eso mostramos
+   // un enlace real que el usuario toca directamente.
+   const link=document.getElementById('excelDownloadLink');
+   link.href=url;
+   link.download=x.nombre||'Evaluaciones_Fisicas.xlsx';
+   link.textContent='⬇ DESCARGAR '+(x.nombre||'EXCEL');
+   area.style.display='block';
+
+   link.onclick=()=>{
+     setTimeout(()=>{
+       area.style.display='none';
+       setTimeout(()=>URL.revokeObjectURL(url),15000);
+     },1200);
+   };
+
+   msg('Excel listo. Tocá el botón DESCARGAR EXCEL AHORA.','ok');
  }catch(e){
    msg(e.message||String(e),'err');
  }
