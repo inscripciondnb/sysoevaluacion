@@ -71,6 +71,16 @@ EXCEL DE RESULTADOS
 - El Excel general consolida todos los comandos y dependencias.
 - Las columnas se exportan en el orden oficial A–AF mostrado en la planilla: Fecha Prueba, Comando, Dependencia, Grado, Nombre, Apellido, Cédula, Celular, datos personales, estado físico y resultados.
 
+INFORMES Y ESTADÍSTICAS
+- En el panel general, el botón INFORMES Y ESTADÍSTICAS abre el resumen del año seleccionado.
+- Se puede filtrar toda la DNB por comando y destacamento; las dependencias homónimas se distinguen por comando.
+- Muestra registrados, evaluaciones completas, pendientes, resultados por prueba, categorías y avance de las dependencias.
+- La pestaña COMPARAR permite contrastar dos comandos o dos destacamentos con cantidades y porcentajes comparables.
+- Los porcentajes de aprobación por prueba usan resultados clasificados como denominador. Una evaluación completa sin «No apto» se cuenta solo cuando sus cinco categorías están clasificadas; los casos pendientes de clasificación se muestran aparte.
+- El botón GUARDAR INFORME ESTADÍSTICO EN PDF abre la impresión del navegador. En la ventana de impresión se elige «Guardar como PDF» o «Guardar en Archivos» según el dispositivo.
+- No se generan PDF individuales de funcionarios. El informe colectivo no incluye nombres, cédulas ni fichas de salud.
+- Los cálculos usan los datos del panel ya cargados. Si se consulta sin conexión, pueden reflejar la última copia sincronizada.
+
 ELIMINAR EVALUACIONES
 - Cada resultado guardado muestra ELIMINAR EVALUACIÓN ANTERIOR.
 - Antes de borrar se solicita confirmación.
