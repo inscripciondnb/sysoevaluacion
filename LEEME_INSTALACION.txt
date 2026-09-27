@@ -59,6 +59,9 @@ REGISTRO DEL FUNCIONARIO
 - Primero se selecciona uno de los comandos oficiales: COBAM, CBI, CBE, CD o CSD.
 - El campo Dependencia muestra únicamente las dependencias que pertenecen al comando elegido.
 - El panel del evaluador usa la misma selección Comando > Dependencia.
+- Todos los campos visibles de la ficha son obligatorios. La ergometría es obligatoria desde los 35 años inclusive.
+- Las preguntas de detalle aparecen únicamente cuando corresponde: al elegir Sí o la opción Otros.
+- Desde el resumen individual se ve la ficha completa y el evaluador puede editarla sin duplicar al funcionario ni perder sus resultados.
 
 EXCEL DE RESULTADOS
 - La descarga genera un archivo .xlsx real con la hoja TABLA RESULTADOS.
@@ -80,7 +83,7 @@ ELIMINAR EVALUACIONES
 - REINICIAR TODAS LAS EVALUACIONES borra todos los resultados de todos los años y limpia las sesiones compartidas, pero conserva todas las fichas.
 - ELIMINAR TODOS LOS REGISTROS EN GENERAL realiza un reinicio absoluto: borra fichas de funcionarios, evaluaciones y sesiones compartidas. Conserva solamente las hojas, encabezados y configuración.
 - Los borrados masivos requieren escribir una confirmación exacta para evitar accidentes.
-- El panel principal del evaluador permite buscar dependencias por nombre en todos los comandos.
+- El buscador respeta el comando seleccionado; la opción Todos los comandos permite buscar en el conjunto completo.
 - Las dependencias con funcionarios aparecen primero, ordenadas por cantidad y destacadas en verde; las vacías quedan debajo.
 - ELIMINAR TODOS LOS REGISTROS EN GENERAL y REINICIAR TODAS LAS EVALUACIONES están en el panel principal, sin ingresar a una dependencia.
 - Dentro de una dependencia, ELIMINAR TODOS LOS REGISTROS DE ESTA DEPENDENCIA borra sus fichas y resultados históricos, sin tocar otros comandos o dependencias. Bloquea el borrado si hay una sesión compartida activa.

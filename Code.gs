@@ -139,8 +139,8 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'produccion-buscador-y-borrado-dependencia-2026-09-26',
-    acciones: ['confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'eliminarRegistrosDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
+    version: 'produccion-edicion-ficha-y-validacion-2026-09-26',
+    acciones: ['actualizarFuncionario', 'confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'eliminarRegistrosDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
 
   });
 
@@ -179,6 +179,14 @@ function doPost(e) {
       case 'registrarFuncionario':
 
         result = registrarFuncionario_(data);
+
+        break;
+
+      case 'actualizarFuncionario':
+
+        validarSesionEvaluador_(body.token);
+
+        result = actualizarFuncionario_(data);
 
         break;
 
@@ -968,6 +976,98 @@ function ensureSheet_(ss, name, headers) {
 
    ========================================================= */
 
+function validarFichaFuncionario_(data) {
+  const f = {
+    grado: valor_(data.grado), nombre: valor_(data.nombre), apellido: valor_(data.apellido),
+    ci: valor_(data.ci), nacimiento: valor_(data.nacimiento), genero: valor_(data.genero),
+    telefono: valor_(data.telefono), comando: valor_(data.comando),
+    destacamento: normalizarDependencia_(data.destacamento || data.dest), ingreso: valor_(data.ingreso),
+    carne: valor_(data.carne), vencCarne: valor_(data.vencCarne),
+    ergometria: valor_(data.ergometria || data.ergo), fechaErgo: valor_(data.fechaErgo),
+    enfermedadCronica: valor_(data.enfermedadCronica), enfermedadCronicaOtro: valor_(data.enfermedadCronicaOtro),
+    enfermedadAntecedente: valor_(data.enfermedadAntecedente), enfermedadAntecedenteOtro: valor_(data.enfermedadAntecedenteOtro),
+    presentaLesion: valor_(data.presentaLesion), lesionCual: valor_(data.lesionCual),
+    lesionAfecta: valor_(data.lesionAfecta), tareasImpedidas: valor_(data.tareasImpedidas),
+    rehabilitacion: valor_(data.rehabilitacion), rehabilitacionDetalle: valor_(data.rehabilitacionDetalle),
+    peso: numeroOVacio_(data.peso), altura: numeroOVacio_(data.altura),
+    antecedentes: valor_(data.antecedentes), lesiones: valor_(data.lesiones)
+  };
+
+  if (!f.grado) throw new Error('Ingresá el grado.');
+  if (!f.nombre) throw new Error('Ingresá el nombre.');
+  if (!f.apellido) throw new Error('Ingresá el apellido.');
+  if (!f.ci) throw new Error('Ingresá la CI.');
+  if (!f.nacimiento) throw new Error('Ingresá la fecha de nacimiento.');
+  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(f.nacimiento);
+  if (!partes) throw new Error('Ingresá día, mes y año de nacimiento válidos.');
+  const fechaNac = new Date(Number(partes[1]), Number(partes[2]) - 1, Number(partes[3]));
+  if (fechaNac.getFullYear() !== Number(partes[1]) || fechaNac.getMonth() !== Number(partes[2]) - 1 || fechaNac.getDate() !== Number(partes[3]) || fechaNac > new Date()) throw new Error('Fecha de nacimiento no válida.');
+  if (!f.genero) throw new Error('Seleccioná el género.');
+  if (!f.telefono) throw new Error('Ingresá el teléfono.');
+  if (!f.comando) throw new Error('Seleccioná el comando.');
+  if (!f.destacamento) throw new Error('Seleccioná la dependencia.');
+  if (!dependenciaValida_(f.comando, f.destacamento)) throw new Error('La dependencia no pertenece al comando seleccionado.');
+  if (!f.ingreso) throw new Error('Ingresá la fecha de ingreso.');
+  if (!f.carne) throw new Error('Indicá si el carné de salud está vigente.');
+  if (f.carne === 'Sí' && !f.vencCarne) throw new Error('Ingresá el vencimiento del carné de salud.');
+
+  const edad = calcularEdad_(f.nacimiento);
+  if (Number(edad) >= 35 && !f.ergometria) throw new Error('La ergometría es obligatoria desde los 35 años inclusive.');
+  if (f.ergometria === 'Sí' && !f.fechaErgo) throw new Error('Ingresá la fecha de realización de la ergometría.');
+
+  if (!f.enfermedadCronica) throw new Error('Completá enfermedades crónicas.');
+  if (f.enfermedadCronica === 'Otros' && !f.enfermedadCronicaOtro) throw new Error('Especificá la enfermedad crónica.');
+  if (!f.enfermedadAntecedente) throw new Error('Completá los antecedentes de enfermedad.');
+  if (f.enfermedadAntecedente === 'Otros' && !f.enfermedadAntecedenteOtro) throw new Error('Especificá el antecedente de enfermedad.');
+  if (!f.presentaLesion) throw new Error('Indicá si presenta alguna lesión.');
+  if (f.presentaLesion === 'Sí') {
+    if (!f.lesionCual) throw new Error('Especificá cuál es la lesión.');
+    if (!f.lesionAfecta) throw new Error('Indicá si la lesión afecta su vida cotidiana o profesional.');
+    if (f.lesionAfecta === 'Sí' && !f.tareasImpedidas) throw new Error('Especificá qué tareas le impide realizar.');
+    if (!f.rehabilitacion) throw new Error('Indicá si realiza rehabilitación.');
+    if (f.rehabilitacion === 'Sí' && !f.rehabilitacionDetalle) throw new Error('Detallá el tratamiento de rehabilitación.');
+  }
+  if (!(Number(f.peso) > 0)) throw new Error('Ingresá un peso válido.');
+  if (!(Number(f.altura) > 0)) throw new Error('Ingresá una altura válida.');
+  return f;
+}
+
+function filaFuncionario_(id, fechaRegistro, f) {
+  return [
+    id, fechaRegistro, f.grado, f.nombre, f.ci, f.nacimiento, f.genero, f.telefono,
+    f.destacamento, f.ingreso, f.carne, f.vencCarne, f.ergometria, f.fechaErgo,
+    f.antecedentes, f.lesiones, f.enfermedadCronica, f.enfermedadCronicaOtro,
+    f.enfermedadAntecedente, f.enfermedadAntecedenteOtro, f.presentaLesion,
+    f.lesionCual, f.lesionAfecta, f.tareasImpedidas, f.rehabilitacion,
+    f.rehabilitacionDetalle, f.peso, f.altura, f.comando, f.apellido
+  ];
+}
+
+function actualizarFuncionario_(data) {
+  const id = valor_(data.funcionarioId || data.id);
+  if (!id) throw new Error('Funcionario no identificado.');
+  const ficha = validarFichaFuncionario_(data);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const sh = getDb_().getSheetByName('Funcionarios');
+    const lastRow = sh.getLastRow();
+    if (lastRow < 2) throw new Error('No se encontró el funcionario.');
+    const rows = sh.getRange(2, 1, lastRow - 1, 30).getValues();
+    const index = rows.findIndex(row => String(row[0] || '') === id);
+    if (index < 0) throw new Error('No se encontró el funcionario.');
+    const normalizedCI = normalizarCi_(ficha.ci);
+    const duplicate = rows.some((row, i) => i !== index && normalizarCi_(row[4]) === normalizedCI);
+    if (duplicate) throw new Error('La CI ingresada pertenece a otro funcionario.');
+    const sheetRow = index + 2;
+    const fechaRegistro = rows[index][1] || new Date();
+    sh.getRange(sheetRow, 1, 1, 30).setValues([filaFuncionario_(id, fechaRegistro, ficha)]);
+    return {funcionario: Object.assign({id:id, nombreSolo:ficha.nombre, nombre:[ficha.nombre,ficha.apellido].filter(Boolean).join(' '), dest:ficha.destacamento}, ficha)};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 
 
 function registrarFuncionario_(data) {
@@ -1029,6 +1129,8 @@ function registrarFuncionario_(data) {
 
   }
 
+  const ficha = validarFichaFuncionario_(data);
+
 
 
   const lock = LockService.getScriptLock();
@@ -1047,7 +1149,7 @@ function registrarFuncionario_(data) {
 
     const lastRow = sh.getLastRow();
 
-    const normalizedCI = normalizarCi_(ci);
+    const normalizedCI = normalizarCi_(ficha.ci);
 
 
 
@@ -1079,51 +1181,7 @@ function registrarFuncionario_(data) {
 
 
 
-    sh.appendRow([
-
-      id,
-
-      new Date(),
-
-      valor_(data.grado),
-
-      nombre,
-
-      ci,
-
-      nacimiento,
-
-      genero,
-
-      valor_(data.telefono),
-
-      destacamento,
-
-      valor_(data.ingreso),
-
-      valor_(data.carne),
-
-      valor_(data.vencCarne),
-
-      valor_(data.ergometria || data.ergo),
-
-      valor_(data.fechaErgo),
-
-      valor_(data.antecedentes),
-
-      valor_(data.lesiones),
-
-      valor_(data.enfermedadCronica),valor_(data.enfermedadCronicaOtro),
-
-      valor_(data.enfermedadAntecedente),valor_(data.enfermedadAntecedenteOtro),
-
-      valor_(data.presentaLesion),valor_(data.lesionCual),valor_(data.lesionAfecta),
-
-      valor_(data.tareasImpedidas),valor_(data.rehabilitacion),valor_(data.rehabilitacionDetalle),
-
-      numeroOVacio_(data.peso),numeroOVacio_(data.altura),comando,apellido
-
-    ]);
+    sh.appendRow(filaFuncionario_(id, new Date(), ficha));
 
 
 
@@ -1131,9 +1189,9 @@ function registrarFuncionario_(data) {
 
       id: id,
 
-      nombre: nombre,
+      nombre: [ficha.nombre, ficha.apellido].filter(Boolean).join(' '),
 
-      destacamento: destacamento
+      destacamento: ficha.destacamento
 
     };
 
