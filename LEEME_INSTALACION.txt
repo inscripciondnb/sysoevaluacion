@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-buscador-y-borrado-dependencia-2026-09-26
+   produccion-panel-acordeones-y-sede-evaluacion-2026-09-27
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -63,6 +63,17 @@ REGISTRO DEL FUNCIONARIO
 - Las preguntas de detalle aparecen únicamente cuando corresponde: al elegir Sí o la opción Otros.
 - Desde el resumen individual se ve la ficha completa y el evaluador puede editarla sin duplicar al funcionario ni perder sus resultados.
 
+SEDE DE EVALUACIÓN SIN CAMBIAR EL ORIGEN
+- La ficha individual muestra una sección SEDE DE EVALUACIÓN.
+- El evaluador puede asignar temporalmente al funcionario a cualquier dependencia de cualquier comando.
+- Ejemplo: un funcionario de Desto. J.P. Varela puede evaluarse en Desto. Treinta y Tres.
+- Al guardar la sede, el funcionario aparece en el panel operativo de la dependencia donde será evaluado y participa allí en evaluaciones individuales y sesiones compartidas.
+- Su comando y dependencia de origen nunca se modifican: la ficha, los informes estadísticos y los Excel continúan mostrándolo bajo su dependencia original.
+- En la lista de la sede receptora aparece una etiqueta con su dependencia de origen para identificarlo fácilmente.
+- VOLVER A SU ORIGEN elimina el traslado operativo y lo devuelve al panel de su dependencia original.
+- No se permite cambiar la sede mientras el funcionario participa en una sesión compartida activa.
+- Al cambiar la sede se limpian sus asignaciones de sesiones compartidas pendientes para evitar que quede simultáneamente en dos sedes.
+
 EXCEL DE RESULTADOS
 - La descarga genera un archivo .xlsx real con la hoja TABLA RESULTADOS.
 - Mantiene la estructura de la planilla oficial: datos personales, IMC, Core, flexibilidad, flexiones, sentadilla, Yo-Yo, comorbilidad, carné de salud y ergometría.
@@ -97,6 +108,15 @@ ELIMINAR EVALUACIONES
 - Las dependencias con funcionarios aparecen primero, ordenadas por cantidad y destacadas en verde; las vacías quedan debajo.
 - ELIMINAR TODOS LOS REGISTROS EN GENERAL y REINICIAR TODAS LAS EVALUACIONES están en el panel principal, sin ingresar a una dependencia.
 - Dentro de una dependencia, ELIMINAR TODOS LOS REGISTROS DE ESTA DEPENDENCIA borra sus fichas y resultados históricos, sin tocar otros comandos o dependencias. Bloquea el borrado si hay una sesión compartida activa.
+
+PANEL DE COMANDOS Y DEPENDENCIAS
+- Al abrir el panel se selecciona TODOS LOS COMANDOS y cada comando aparece como una fila desplegable.
+- El filtro CON FUNCIONARIOS muestra solamente comandos y dependencias con personal asignado para evaluar.
+- TODAS muestra primero las dependencias con funcionarios y agrupa las vacías dentro de DEPENDENCIAS SIN FUNCIONARIOS.
+- VACÍAS permite revisar únicamente dependencias sin personal.
+- Al seleccionar un comando en particular, su grupo aparece abierto automáticamente.
+- El buscador encuentra comandos y dependencias aunque estén vacías, y abre automáticamente los grupos con coincidencias.
+- Los funcionarios trasladados temporalmente cuentan en la sede donde serán evaluados; sus informes y Excel continúan perteneciendo a la dependencia de origen.
 
 API CONFIGURADA
 https://script.google.com/macros/s/AKfycbwMBHKx-Zj3ambN3xRz8TrynGTZ2jt5vAdFn5jqZ_R3DElw2EZ5gWTMBWrCsn0ggpcGSg/exec

@@ -139,7 +139,7 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'produccion-edicion-ficha-y-validacion-2026-09-26',
+    version: 'produccion-panel-acordeones-y-sede-evaluacion-2026-09-27',
     acciones: ['actualizarFuncionario', 'confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'eliminarRegistrosDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
 
   });
@@ -187,6 +187,14 @@ function doPost(e) {
         validarSesionEvaluador_(body.token);
 
         result = actualizarFuncionario_(data);
+
+        break;
+
+      case 'asignarSedeEvaluacion':
+
+        validarSesionEvaluador_(body.token);
+
+        result = asignarSedeEvaluacion_(data);
 
         break;
 
@@ -536,8 +544,9 @@ function validarDueñoCompartido_(ses, data) {
 
 function bloquearGuardadoCompartido_(data) {
   if (['Core','Sentadilla','Yo-Yo'].indexOf(valor_(data.prueba)) === -1) return;
-  const dest = normalizarDependencia_(data.destacamento || destacamentoFuncionario_(valor_(data.funcionarioId)));
-  const key = claveSesionCompartida_({comando:valor_(data.comando) || comandoDependencia_(dest), destacamento:dest, prueba:data.prueba, anio:data.anio});
+  const funcionarioId = valor_(data.funcionarioId);
+  const dest = normalizarDependencia_(data.destacamento || destacamentoEvaluacionFuncionario_(funcionarioId));
+  const key = claveSesionCompartida_({comando:valor_(data.comando) || comandoEvaluacionFuncionario_(funcionarioId) || comandoDependencia_(dest), destacamento:dest, prueba:data.prueba, anio:data.anio});
   const raw = PropertiesService.getScriptProperties().getProperty(key);
   if (!raw) return;
   const ses = JSON.parse(raw), registro = (ses.funcionarios || {})[valor_(data.funcionarioId)];
@@ -554,6 +563,18 @@ function comandoFuncionario_(id) {
   return persona ? valor_(persona.comando) || comandoDependencia_(persona.destacamento || persona.dest) : '';
 }
 
+function destacamentoEvaluacionFuncionario_(id) {
+  const persona = obtenerFuncionario_(getDb_(), id);
+  return persona ? valor_(persona.destacamentoEvaluacion) || valor_(persona.destacamento || persona.dest) : '';
+}
+
+function comandoEvaluacionFuncionario_(id) {
+  const persona = obtenerFuncionario_(getDb_(), id);
+  if (!persona) return '';
+  const dest = valor_(persona.destacamentoEvaluacion) || valor_(persona.destacamento || persona.dest);
+  return valor_(persona.comandoEvaluacion) || valor_(persona.comando) || comandoDependencia_(dest);
+}
+
 function modificarFuncionarioCompartido_(data, accion) {
   const key = claveSesionCompartida_(data), id = valor_(data.funcionarioId);
   if (!id) throw new Error('Falta el funcionario.');
@@ -562,7 +583,9 @@ function modificarFuncionarioCompartido_(data, accion) {
     const props = PropertiesService.getScriptProperties(), raw = props.getProperty(key);
     if (!raw) throw new Error('Primero iniciá la sesión compartida.');
     const ses = JSON.parse(raw), rol = validarDueñoCompartido_(ses, data);
-    if (destacamentoFuncionario_(id) !== ses.destacamento) throw new Error('El funcionario no pertenece a este destacamento.');
+    if (destacamentoEvaluacionFuncionario_(id) !== ses.destacamento || comandoEvaluacionFuncionario_(id) !== ses.comando) {
+      throw new Error('El funcionario no está asignado a esta sede de evaluación.');
+    }
     ses.funcionarios = ses.funcionarios || {};
     const actual = ses.funcionarios[id];
     if (accion === 'asignar') {
@@ -906,7 +929,9 @@ function setupDb_(ss) {
 
     'Presenta lesión','Lesión - cuál','Lesión afecta vida cotidiana/profesional','Tareas impedidas',
 
-    'Rehabilitación','Rehabilitación - detalle','Peso kg','Altura cm','Comando','Apellido'
+    'Rehabilitación','Rehabilitación - detalle','Peso kg','Altura cm','Comando','Apellido',
+
+    'Comando sede evaluación','Sede de evaluación'
 
   ]);
 
@@ -951,6 +976,12 @@ function ensureSheet_(ss, name, headers) {
   if (!sh) {
 
     sh = ss.insertSheet(name);
+
+  }
+
+  if (sh.getMaxColumns() < headers.length) {
+
+    sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
 
   }
 
@@ -1032,14 +1063,16 @@ function validarFichaFuncionario_(data) {
   return f;
 }
 
-function filaFuncionario_(id, fechaRegistro, f) {
+function filaFuncionario_(id, fechaRegistro, f, sedeEvaluacion) {
+  sedeEvaluacion = sedeEvaluacion || {};
   return [
     id, fechaRegistro, f.grado, f.nombre, f.ci, f.nacimiento, f.genero, f.telefono,
     f.destacamento, f.ingreso, f.carne, f.vencCarne, f.ergometria, f.fechaErgo,
     f.antecedentes, f.lesiones, f.enfermedadCronica, f.enfermedadCronicaOtro,
     f.enfermedadAntecedente, f.enfermedadAntecedenteOtro, f.presentaLesion,
     f.lesionCual, f.lesionAfecta, f.tareasImpedidas, f.rehabilitacion,
-    f.rehabilitacionDetalle, f.peso, f.altura, f.comando, f.apellido
+    f.rehabilitacionDetalle, f.peso, f.altura, f.comando, f.apellido,
+    valor_(sedeEvaluacion.comandoEvaluacion), normalizarDependencia_(sedeEvaluacion.destacamentoEvaluacion)
   ];
 }
 
@@ -1053,7 +1086,7 @@ function actualizarFuncionario_(data) {
     const sh = getDb_().getSheetByName('Funcionarios');
     const lastRow = sh.getLastRow();
     if (lastRow < 2) throw new Error('No se encontró el funcionario.');
-    const rows = sh.getRange(2, 1, lastRow - 1, 30).getValues();
+    const rows = sh.getRange(2, 1, lastRow - 1, 32).getValues();
     const index = rows.findIndex(row => String(row[0] || '') === id);
     if (index < 0) throw new Error('No se encontró el funcionario.');
     const normalizedCI = normalizarCi_(ficha.ci);
@@ -1061,11 +1094,44 @@ function actualizarFuncionario_(data) {
     if (duplicate) throw new Error('La CI ingresada pertenece a otro funcionario.');
     const sheetRow = index + 2;
     const fechaRegistro = rows[index][1] || new Date();
-    sh.getRange(sheetRow, 1, 1, 30).setValues([filaFuncionario_(id, fechaRegistro, ficha)]);
-    return {funcionario: Object.assign({id:id, nombreSolo:ficha.nombre, nombre:[ficha.nombre,ficha.apellido].filter(Boolean).join(' '), dest:ficha.destacamento}, ficha)};
+    const sedeEvaluacion = {comandoEvaluacion:String(rows[index][30] || ''), destacamentoEvaluacion:normalizarDependencia_(rows[index][31])};
+    sh.getRange(sheetRow, 1, 1, 32).setValues([filaFuncionario_(id, fechaRegistro, ficha, sedeEvaluacion)]);
+    return {funcionario: Object.assign({id:id, nombreSolo:ficha.nombre, nombre:[ficha.nombre,ficha.apellido].filter(Boolean).join(' '), dest:ficha.destacamento}, ficha, sedeEvaluacion)};
   } finally {
     lock.releaseLock();
   }
+}
+
+/** Asigna una sede operativa sin modificar la dependencia de origen. */
+function asignarSedeEvaluacion_(data) {
+  const id = valor_(data.funcionarioId || data.id);
+  if (!id) throw new Error('Funcionario no identificado.');
+  let comandoEvaluacion = valor_(data.comandoEvaluacion);
+  let destacamentoEvaluacion = normalizarDependencia_(data.destacamentoEvaluacion);
+  if (!!comandoEvaluacion !== !!destacamentoEvaluacion) throw new Error('Seleccioná el comando y la sede de evaluación.');
+  if (destacamentoEvaluacion && !dependenciaValida_(comandoEvaluacion, destacamentoEvaluacion)) {
+    throw new Error('La sede de evaluación no pertenece al comando seleccionado.');
+  }
+
+  asegurarSinSesionActiva_({funcionarioId:id});
+  const lock = LockService.getScriptLock(); lock.waitLock(30000);
+  try {
+    const sh = getDb_().getSheetByName('Funcionarios');
+    if (!sh || sh.getLastRow() < 2) throw new Error('No se encontró el funcionario.');
+    const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 32).getValues();
+    const index = rows.findIndex(row => String(row[0] || '') === id);
+    if (index < 0) throw new Error('No se encontró el funcionario.');
+    const origen = normalizarDependencia_(rows[index][8]);
+    const comandoOrigen = String(rows[index][28] || '') || comandoDependencia_(origen);
+    if (comandoEvaluacion === comandoOrigen && destacamentoEvaluacion === origen) {
+      comandoEvaluacion = '';
+      destacamentoEvaluacion = '';
+    }
+    sh.getRange(index + 2, 31, 1, 2).setValues([[comandoEvaluacion, destacamentoEvaluacion]]);
+    limpiarSesionesCompartidas_({funcionarioId:id});
+    return {funcionarioId:id, comandoOrigen:comandoOrigen, destacamentoOrigen:origen,
+      comandoEvaluacion:comandoEvaluacion, destacamentoEvaluacion:destacamentoEvaluacion};
+  } finally { lock.releaseLock(); }
 }
 
 
@@ -1239,7 +1305,7 @@ function cargarPanel_() {
 
     const rows = shF
 
-      .getRange(2, 1, shF.getLastRow() - 1, 30)
+      .getRange(2, 1, shF.getLastRow() - 1, 32)
 
       .getValues();
 
@@ -1272,6 +1338,9 @@ function cargarPanel_() {
 
         comando: comando,
         destacamento: dependencia,
+
+        comandoEvaluacion: String(row[30] || ''),
+        destacamentoEvaluacion: normalizarDependencia_(row[31]),
 
         dest: dependencia,
 
@@ -1431,8 +1500,8 @@ function eliminarEvaluacion_(data) {
   if (pruebasValidas.indexOf(prueba) === -1) throw new Error('Prueba no válida.');
 
   if (['Core','Sentadilla','Yo-Yo'].indexOf(prueba) !== -1) {
-    const destacamento = normalizarDependencia_(data.destacamento || destacamentoFuncionario_(funcionarioId));
-    const comando = valor_(data.comando) || comandoFuncionario_(funcionarioId) || comandoDependencia_(destacamento);
+    const destacamento = normalizarDependencia_(data.destacamento || destacamentoEvaluacionFuncionario_(funcionarioId));
+    const comando = valor_(data.comando) || comandoEvaluacionFuncionario_(funcionarioId) || comandoDependencia_(destacamento);
     const key = claveSesionCompartida_({comando:comando, destacamento:destacamento, prueba:prueba, anio:anio});
     const raw = PropertiesService.getScriptProperties().getProperty(key);
     if (raw) {
@@ -1609,7 +1678,7 @@ function idsFuncionariosDestacamento_(ss, destacamento, comando) {
   const ids = {};
   const sh = ss.getSheetByName('Funcionarios');
   if (!sh || sh.getLastRow() <= 1) return ids;
-  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 30).getValues();
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 32).getValues();
   rows.forEach(function(row) {
     const dep = normalizarDependencia_(row[8]);
     const cmd = String(row[28] || '') || comandoDependencia_(dep);
@@ -2043,7 +2112,7 @@ function obtenerFuncionario_(ss, funcionarioId) {
 
 
 
-  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 30).getValues();
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 32).getValues();
 
   for (let i = 0; i < rows.length; i++) {
 
@@ -2064,7 +2133,9 @@ function obtenerFuncionario_(ss, funcionarioId) {
 
         genero: String(rows[i][6] || ''),
         destacamento: normalizarDependencia_(rows[i][8]),
-        comando: String(rows[i][28] || '') || comandoDependencia_(rows[i][8])
+        comando: String(rows[i][28] || '') || comandoDependencia_(rows[i][8]),
+        comandoEvaluacion: String(rows[i][30] || ''),
+        destacamentoEvaluacion: normalizarDependencia_(rows[i][31])
 
       };
 
