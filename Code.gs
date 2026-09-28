@@ -139,7 +139,7 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'produccion-limites-core-sentadilla-2026-09-28',
+    version: 'produccion-numeracion-estable-por-sede-2026-09-28',
     acciones: ['actualizarFuncionario', 'confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'eliminarRegistrosDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
 
   });
@@ -988,7 +988,7 @@ function setupDb_(ss) {
 
     'Rehabilitación','Rehabilitación - detalle','Peso kg','Altura cm','Comando','Apellido',
 
-    'Comando sede evaluación','Sede de evaluación'
+    'Comando sede evaluación','Sede de evaluación','Números por sede de evaluación'
 
   ]);
 
@@ -1129,8 +1129,63 @@ function filaFuncionario_(id, fechaRegistro, f, sedeEvaluacion) {
     f.enfermedadAntecedente, f.enfermedadAntecedenteOtro, f.presentaLesion,
     f.lesionCual, f.lesionAfecta, f.tareasImpedidas, f.rehabilitacion,
     f.rehabilitacionDetalle, f.peso, f.altura, f.comando, f.apellido,
-    valor_(sedeEvaluacion.comandoEvaluacion), normalizarDependencia_(sedeEvaluacion.destacamentoEvaluacion)
+    valor_(sedeEvaluacion.comandoEvaluacion), normalizarDependencia_(sedeEvaluacion.destacamentoEvaluacion),
+    valor_(sedeEvaluacion.numerosPorSede)
   ];
+}
+
+function claveNumeroSede_(comando, dependencia) {
+  return valor_(comando) + '|' + normalizarDependencia_(dependencia);
+}
+
+function numerosPorSede_(raw) {
+  try {
+    const x = JSON.parse(String(raw || '{}'));
+    return x && typeof x === 'object' && !Array.isArray(x) ? x : {};
+  } catch (err) { return {}; }
+}
+
+/** Numera por sede una sola vez; conserva los números previos al sumar personal o cambiar de sede. */
+function asegurarNumerosEvaluacion_(sh) {
+  if (sh.getLastRow() < 2) return [];
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 33).getValues();
+  const maximos = {}, usados = {};
+  rows.forEach(function(row) {
+    const mapa = numerosPorSede_(row[32]);
+    Object.keys(mapa).forEach(function(key) {
+      const n = Number(mapa[key]);
+      if (Number.isInteger(n) && n > 0) maximos[key] = Math.max(maximos[key] || 0, n);
+    });
+  });
+  rows.forEach(function(row, index) {
+    if (!row[0]) return;
+    const origen = normalizarDependencia_(row[8]);
+    const comandoOrigen = String(row[28] || '') || comandoDependencia_(origen);
+    const sede = normalizarDependencia_(row[31]) || origen;
+    const comandoSede = String(row[30] || '') || comandoOrigen;
+    const claves = Array.from(new Set([claveNumeroSede_(comandoOrigen, origen), claveNumeroSede_(comandoSede, sede)]));
+    const mapa = numerosPorSede_(row[32]);
+    let cambio = false;
+    claves.forEach(function(key) {
+      if (!key || key === '|' || (usados[key] && usados[key][Number(mapa[key])])) {
+        if (!key || key === '|') return;
+        mapa[key] = null;
+      }
+      const anterior = Number(mapa[key]);
+      if (!Number.isInteger(anterior) || anterior <= 0) {
+        mapa[key] = (maximos[key] || 0) + 1;
+        maximos[key] = mapa[key];
+        cambio = true;
+      }
+      if (!usados[key]) usados[key] = {};
+      usados[key][mapa[key]] = true;
+    });
+    if (cambio) {
+      row[32] = JSON.stringify(mapa);
+      sh.getRange(index + 2, 33).setValue(row[32]);
+    }
+  });
+  return rows;
 }
 
 function actualizarFuncionario_(data) {
@@ -1143,7 +1198,7 @@ function actualizarFuncionario_(data) {
     const sh = getDb_().getSheetByName('Funcionarios');
     const lastRow = sh.getLastRow();
     if (lastRow < 2) throw new Error('No se encontró el funcionario.');
-    const rows = sh.getRange(2, 1, lastRow - 1, 32).getValues();
+    const rows = sh.getRange(2, 1, lastRow - 1, 33).getValues();
     const index = rows.findIndex(row => String(row[0] || '') === id);
     if (index < 0) throw new Error('No se encontró el funcionario.');
     const normalizedCI = normalizarCi_(ficha.ci);
@@ -1151,9 +1206,14 @@ function actualizarFuncionario_(data) {
     if (duplicate) throw new Error('La CI ingresada pertenece a otro funcionario.');
     const sheetRow = index + 2;
     const fechaRegistro = rows[index][1] || new Date();
-    const sedeEvaluacion = {comandoEvaluacion:String(rows[index][30] || ''), destacamentoEvaluacion:normalizarDependencia_(rows[index][31])};
-    sh.getRange(sheetRow, 1, 1, 32).setValues([filaFuncionario_(id, fechaRegistro, ficha, sedeEvaluacion)]);
-    return {funcionario: Object.assign({id:id, nombreSolo:ficha.nombre, nombre:[ficha.nombre,ficha.apellido].filter(Boolean).join(' '), dest:ficha.destacamento}, ficha, sedeEvaluacion)};
+    const sedeEvaluacion = {comandoEvaluacion:String(rows[index][30] || ''), destacamentoEvaluacion:normalizarDependencia_(rows[index][31]), numerosPorSede:String(rows[index][32] || '')};
+    sh.getRange(sheetRow, 1, 1, 33).setValues([filaFuncionario_(id, fechaRegistro, ficha, sedeEvaluacion)]);
+    const numerados = asegurarNumerosEvaluacion_(sh);
+    const actualizado = numerados[index];
+    const sede = normalizarDependencia_(actualizado[31]) || ficha.destacamento;
+    const comandoSede = String(actualizado[30] || '') || ficha.comando;
+    return {funcionario: Object.assign({id:id, nombreSolo:ficha.nombre, nombre:[ficha.nombre,ficha.apellido].filter(Boolean).join(' '), dest:ficha.destacamento}, ficha, sedeEvaluacion,
+      {numerosPorSede:actualizado[32], numeroEvaluacion:Number(numerosPorSede_(actualizado[32])[claveNumeroSede_(comandoSede,sede)]) || 0})};
   } finally {
     lock.releaseLock();
   }
@@ -1175,7 +1235,7 @@ function asignarSedeEvaluacion_(data) {
   try {
     const sh = getDb_().getSheetByName('Funcionarios');
     if (!sh || sh.getLastRow() < 2) throw new Error('No se encontró el funcionario.');
-    const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 32).getValues();
+    const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 33).getValues();
     const index = rows.findIndex(row => String(row[0] || '') === id);
     if (index < 0) throw new Error('No se encontró el funcionario.');
     const origen = normalizarDependencia_(rows[index][8]);
@@ -1185,9 +1245,14 @@ function asignarSedeEvaluacion_(data) {
       destacamentoEvaluacion = '';
     }
     sh.getRange(index + 2, 31, 1, 2).setValues([[comandoEvaluacion, destacamentoEvaluacion]]);
+    const rowsNumerados = asegurarNumerosEvaluacion_(sh);
+    const sede = destacamentoEvaluacion || origen;
+    const comandoSede = comandoEvaluacion || comandoOrigen;
+    const numeroEvaluacion = Number(numerosPorSede_(rowsNumerados[index][32])[claveNumeroSede_(comandoSede, sede)]) || 0;
     limpiarSesionesCompartidas_({funcionarioId:id});
     return {funcionarioId:id, comandoOrigen:comandoOrigen, destacamentoOrigen:origen,
-      comandoEvaluacion:comandoEvaluacion, destacamentoEvaluacion:destacamentoEvaluacion};
+      comandoEvaluacion:comandoEvaluacion, destacamentoEvaluacion:destacamentoEvaluacion,
+      numeroEvaluacion:numeroEvaluacion, numerosPorSede:rowsNumerados[index][32]};
   } finally { lock.releaseLock(); }
 }
 
@@ -1305,6 +1370,7 @@ function registrarFuncionario_(data) {
 
 
     sh.appendRow(filaFuncionario_(id, new Date(), ficha));
+    asegurarNumerosEvaluacion_(sh);
 
 
 
@@ -1360,11 +1426,10 @@ function cargarPanel_() {
 
   if (shF.getLastRow() > 1) {
 
-    const rows = shF
-
-      .getRange(2, 1, shF.getLastRow() - 1, 32)
-
-      .getValues();
+    const numberingLock = LockService.getScriptLock(); numberingLock.waitLock(30000);
+    let rows;
+    try { rows = asegurarNumerosEvaluacion_(shF); }
+    finally { numberingLock.releaseLock(); }
 
 
 
@@ -1398,6 +1463,8 @@ function cargarPanel_() {
 
         comandoEvaluacion: String(row[30] || ''),
         destacamentoEvaluacion: normalizarDependencia_(row[31]),
+        numeroEvaluacion: Number(numerosPorSede_(row[32])[claveNumeroSede_(String(row[30] || '') || comando, normalizarDependencia_(row[31]) || dependencia)]) || 0,
+        numerosPorSede: String(row[32] || ''),
 
         dest: dependencia,
 

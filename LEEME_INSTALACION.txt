@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-limites-core-sentadilla-2026-09-28
+   produccion-numeracion-estable-por-sede-2026-09-28
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -77,6 +77,14 @@ SEDE DE EVALUACIÓN SIN CAMBIAR EL ORIGEN
 - VOLVER A SU ORIGEN elimina el traslado operativo y lo devuelve al panel de su dependencia original.
 - No se permite cambiar la sede mientras el funcionario participa en una sesión compartida activa.
 - Al cambiar la sede se limpian sus asignaciones de sesiones compartidas pendientes para evitar que quede simultáneamente en dos sedes.
+
+NUMERACIÓN DE FUNCIONARIOS POR SEDE
+- Cada funcionario recibe automáticamente un número fijo dentro del destacamento donde se evalúa; empieza en 1 en cada sede y se asigna en orden de registro.
+- El mismo número se muestra en la lista del destacamento, su ficha, flexibilidad, Core, flexiones, sentadilla y Yo-Yo, tanto en modo individual como compartido.
+- Los nuevos funcionarios reciben el siguiente número libre; agregar o eliminar otras fichas no cambia el número de quienes ya estaban.
+- El número se conserva al repetir evaluaciones o reiniciar resultados, porque se guarda junto a la ficha del funcionario.
+- Un traslado operativo otorga un número para la sede receptora; el número de origen queda reservado para ese funcionario cuando regrese.
+- La numeración existente se crea automáticamente en la hoja Funcionarios, en la columna Números por sede de evaluación, al cargar el panel.
 
 EXCEL DE RESULTADOS
 - La descarga genera un archivo .xlsx real con la hoja TABLA RESULTADOS.
