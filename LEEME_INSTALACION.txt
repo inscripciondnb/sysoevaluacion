@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-panel-acordeones-y-sede-evaluacion-2026-09-27
+   produccion-limites-core-sentadilla-2026-09-28
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -25,9 +25,13 @@ CORE Y SENTADILLA — SESIÓN COMPARTIDA
 - Al tocar un funcionario propio, su tiempo se captura y guarda inmediatamente.
 - Ambos ven todos los tiempos en vivo.
 - Un evaluador no puede detener ni guardar el tiempo controlado por el otro.
+- Core se detiene automáticamente a los 2:10 (130 segundos) y Sentadilla a los 2:00 (120 segundos).
+- Al llegar al máximo, el servidor guarda ese tiempo para todos los funcionarios que todavía estaban en curso, sin modificar los tiempos registrados anteriormente.
+- Los dos evaluadores ven el límite y los resultados sincronizados. Si se interrumpe la conexión, la consulta siguiente completa los guardados pendientes al volver a estar disponible.
 
 CORE Y SENTADILLA — EVALUACIÓN INDIVIDUAL
 - El cronómetro local solamente aparece al elegir Evaluación individual.
+- El cronómetro local se detiene al mismo máximo y guarda automáticamente a los funcionarios que aún no tenían tiempo registrado en esa prueba.
 
 YO-YO TEST
 - Permite elegir Evaluación individual o Sesión compartida.

@@ -139,7 +139,7 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'produccion-panel-acordeones-y-sede-evaluacion-2026-09-27',
+    version: 'produccion-limites-core-sentadilla-2026-09-28',
     acciones: ['actualizarFuncionario', 'confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'eliminarRegistrosDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
 
   });
@@ -521,6 +521,8 @@ function estadoSesionCompartida_(data) {
 
   const key = claveSesionCompartida_(data);
 
+  if (limitePruebaCronometrada_(data.prueba)) completarLimiteSesion_(key);
+
   const raw = PropertiesService.getScriptProperties().getProperty(key);
 
   if (!raw) return {estado:'SIN_SESION', serverNow:Date.now()};
@@ -529,6 +531,59 @@ function estadoSesionCompartida_(data) {
 
   return Object.assign({}, ses, {serverNow:Date.now()});
 
+}
+
+function limitePruebaCronometrada_(prueba) {
+  return valor_(prueba) === 'Core' ? 130 : valor_(prueba) === 'Sentadilla' ? 120 : 0;
+}
+
+/** El servidor cierra y guarda los tiempos pendientes al alcanzar el límite. */
+function completarLimiteSesion_(key) {
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  let pendientes = [], sesId = '', prueba = '', anio = 0, limite = 0;
+  try {
+    const props = PropertiesService.getScriptProperties(), raw = props.getProperty(key);
+    if (!raw) return;
+    const ses = JSON.parse(raw);
+    limite = limitePruebaCronometrada_(ses.prueba);
+    if (!limite || ses.estado !== 'ACTIVA' || Date.now() < Number(ses.inicioMs) + limite * 1000) return;
+    sesId = ses.id; prueba = ses.prueba; anio = ses.anio;
+    ses.limiteAlcanzado = true; ses.finMs = Number(ses.inicioMs) + limite * 1000;
+    Object.keys(ses.funcionarios || {}).forEach(function(id) {
+      const registro = ses.funcionarios[id];
+      if (registro.estado !== 'EN_CURSO') return;
+      registro.estado = 'GUARDANDO'; registro.segundos = limite;
+      registro.pausadoMs = ses.finMs; registro.guardadoAutomatico = true;
+      pendientes.push(id);
+    });
+    props.setProperty(key, JSON.stringify(ses));
+  } finally { lock.releaseLock(); }
+  pendientes.forEach(function(id) {
+    let resultado;
+    try {
+      resultado = guardarResultado_({funcionarioId:id, prueba:prueba, anio:anio, segundos:limite});
+    } catch (err) {
+      const retry = LockService.getScriptLock(); retry.waitLock(10000);
+      try {
+        const props = PropertiesService.getScriptProperties(), ses = JSON.parse(props.getProperty(key) || 'null');
+        if (ses && ses.id === sesId && ses.funcionarios[id]?.estado === 'GUARDANDO') {
+          ses.funcionarios[id].estado = 'EN_CURSO';
+          props.setProperty(key, JSON.stringify(ses));
+        }
+      } finally { retry.releaseLock(); }
+      return;
+    }
+    const finish = LockService.getScriptLock(); finish.waitLock(10000);
+    try {
+      const props = PropertiesService.getScriptProperties(), ses = JSON.parse(props.getProperty(key) || 'null');
+      if (ses && ses.id === sesId && ses.funcionarios[id]?.estado === 'GUARDANDO') {
+        const registro = ses.funcionarios[id];
+        registro.estado = 'GUARDADO'; registro.guardadoMs = Date.now();
+        registro.categoria = resultado.categoria; registro.nota = resultado.nota;
+        props.setProperty(key, JSON.stringify(ses));
+      }
+    } finally { finish.releaseLock(); }
+  });
 }
 
 
@@ -628,6 +683,8 @@ function guardarTiempoCompartido_(data) {
     segundos = Number.isFinite(capturado) && capturado >= 0 && capturado <= calculadoServidor + 2
       ? Number(capturado.toFixed(1))
       : calculadoServidor;
+    const limite = limitePruebaCronometrada_(ses.prueba);
+    if (limite) segundos = Math.min(limite, segundos);
     sesId = ses.id;
     registro.segundos = segundos; registro.pausadoMs = Date.now();
     registro.estado = 'GUARDANDO';
