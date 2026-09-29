@@ -139,7 +139,7 @@ function doGet() {
     ok: true,
 
     message: 'API Evaluaciones Bomberos activa',
-    version: 'produccion-numeracion-estable-por-sede-2026-09-28',
+    version: 'produccion-consulta-notas-2026-09-29',
     acciones: ['actualizarFuncionario', 'confirmarEvaluadorSesionCompartida', 'estadoSesionCompartida', 'asignarFuncionarioSesionCompartida', 'iniciarCronometroSesionCompartida', 'omitirIntroduccionYoyoCompartida', 'guardarTiempoSesionCompartida', 'registrarFaltaYoyoCompartida', 'anularFaltaYoyoCompartida', 'finalizarSesionCompartida', 'eliminarEvaluacion', 'eliminarEvaluacionesFuncionario', 'eliminarEvaluacionesDestacamento', 'eliminarRegistrosDestacamento', 'reiniciarTodasEvaluaciones', 'eliminarTodosLosRegistros']
 
   });
@@ -175,6 +175,10 @@ function doPost(e) {
 
 
     switch (action) {
+
+      case 'consultarNotas':
+        result = consultarNotas_(data);
+        break;
 
       case 'registrarFuncionario':
 
@@ -2678,6 +2682,38 @@ function normalizarCi_(ci) {
 
   return String(ci || '').replace(/\D/g, '');
 
+}
+
+/** Consulta pública acotada: solo pruebas guardadas, sin ficha médica ni contacto. */
+function consultarNotas_(data) {
+  const ci = normalizarCi_(data && data.ci);
+  if (!/^\d{6,8}$/.test(ci)) throw new Error('Ingresá una cédula válida.');
+  const ss = getDb_();
+  const shF = ss.getSheetByName('Funcionarios');
+  const shR = ss.getSheetByName('Resultados');
+  if (!shF || !shR) throw new Error('No se pudieron consultar las evaluaciones.');
+  const personas = shF.getLastRow() > 1
+    ? shF.getRange(2, 1, shF.getLastRow() - 1, 5).getValues() : [];
+  const matches = personas.filter(r => normalizarCi_(r[4]) === ci);
+  // Una cédula duplicada no debe mezclar evaluaciones de distintas fichas.
+  if (matches.length !== 1) return {encontrado:false, resultados:[]};
+  const persona = matches[0];
+  const id = String(persona[0] || '');
+  const pruebas = ['Flexibilidad','Core','Flexiones','Sentadilla','Sentadillas','Yo-Yo'];
+  const resultados = shR.getLastRow() > 1
+    ? shR.getRange(2, 1, shR.getLastRow() - 1, 10).getValues()
+      .filter(r => String(r[2] || '') === id && pruebas.indexOf(String(r[3] || '')) !== -1)
+      .map(r => ({
+        anio: Number(r[1]) || String(r[1] || ''),
+        prueba: String(r[3] || ''),
+        segundos: r[4] === '' ? '' : Number(r[4]),
+        repeticiones: r[5] === '' ? '' : Number(r[5]),
+        metros: r[6] === '' ? '' : Number(r[6]),
+        nota: r[8] === '' ? '' : r[8],
+        categoria: String(r[9] || '')
+      })) : [];
+  resultados.sort((a,b) => Number(b.anio) - Number(a.anio) || pruebas.indexOf(a.prueba) - pruebas.indexOf(b.prueba));
+  return {encontrado:true, nombre:String(persona[3] || ''), resultados:resultados};
 }
 
 
