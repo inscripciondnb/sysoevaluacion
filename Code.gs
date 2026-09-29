@@ -1044,7 +1044,7 @@ function instalarHistorialIncluido_(ss) {
   if (!lock.tryLock(1000)) return;
   try {
     if (props.getProperty(HISTORIAL_VERSION_PROPERTY) === HISTORIAL_VERSION) return;
-    const json = Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(HISTORIAL_GZIP_BASE64))).getDataAsString('UTF-8');
+    const json = Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(HISTORIAL_GZIP_BASE64), 'application/x-gzip', 'historial-evaluaciones.json.gz')).getDataAsString('UTF-8');
     const incoming = JSON.parse(json);
     const sh = ss.getSheetByName('HistorialEvaluaciones');
     const existing = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, 12).getValues() : [];

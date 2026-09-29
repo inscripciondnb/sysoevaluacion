@@ -10,9 +10,18 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-numeracion-estable-por-sede-2026-09-28
+   produccion-consulta-notas-2026-09-29
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
+
+HISTORIAL DE EVALUACIONES ANTERIORES
+- La planilla histórica entregada está incluida dentro de Code.gs y se instala automáticamente una sola vez.
+- En la primera solicitud libre después de publicar, se crea o actualiza la hoja HistorialEvaluaciones con 4.452 resultados históricos correspondientes a 903 registros únicos.
+- Los tests actuales y la hoja Resultados no se modifican.
+- CONSULTAR MIS NOTAS acepta la cédula con puntos y guion, sin puntos o solamente con el guion.
+- La consulta combina evaluaciones anteriores y actuales, muestra la fecha de cada prueba y las ordena de la más reciente a la más antigua.
+- También se puede consultar a una persona que solo exista en la planilla histórica y todavía no tenga ficha en Funcionarios.
+- La primera consulta después de publicar puede demorar unos segundos mientras se instala el historial.
 
 CORE Y SENTADILLA — SESIÓN COMPARTIDA
 - Se elige Evaluador 1 o Evaluador 2 desde dispositivos diferentes.
