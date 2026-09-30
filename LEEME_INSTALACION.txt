@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-panel-inicio-evaluaciones-2026-09-30
+   produccion-altas-manuales-historial-2026-09-30
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -66,6 +66,9 @@ YO-YO TEST
 - La tabla se aplica desde los 18 años. Los 18 y 19 años usan el primer tramo etario de la tabla cargada (hasta 29 años). Por debajo de 20 m se muestra Nota 0 / Categoría C.
 
 REGISTRO DEL FUNCIONARIO
+- En Administración general, AGREGAR FUNCIONARIO permite crear manualmente una ficha nueva.
+- CREAR DESTACAMENTO permite ingresar una dependencia que no figure en el catálogo y vincularla a COBAM, CBI, CBE, CD o CSD.
+- Las dependencias creadas manualmente aparecen en altas, ediciones, traslados, sedes de evaluación, paneles e informes.
 - Nombre y apellido se ingresan en campos separados para que el Excel los coloque correctamente en sus columnas oficiales.
 - Fecha de nacimiento ingresada como Día, Mes y Año separados; se valida la fecha real (por ejemplo, se rechaza 31/02).
 - Se guarda en formato ISO para calcular correctamente la edad y se muestra como DD/MM/AAAA en la ficha.
@@ -75,6 +78,13 @@ REGISTRO DEL FUNCIONARIO
 - Todos los campos visibles de la ficha son obligatorios. La ergometría es obligatoria desde los 35 años inclusive.
 - Las preguntas de detalle aparecen únicamente cuando corresponde: al elegir Sí o la opción Otros.
 - Desde el resumen individual se ve la ficha completa y el evaluador puede editarla sin duplicar al funcionario ni perder sus resultados.
+
+CARGA MANUAL DE EVALUACIONES ANTERIORES
+- Desde la ficha individual, CARGAR EVALUACIÓN ANTERIOR permite ingresar una fecha y una o varias pruebas.
+- Se admiten Flexibilidad, Core, Flexiones, Sentadilla y Yo-Yo.
+- Las categorías numéricas se calculan con las mismas tablas oficiales según género y edad en la fecha de la prueba.
+- La información se guarda en HistorialEvaluaciones y no reemplaza la evaluación activa de 2026.
+- Si se vuelve a cargar la misma persona, fecha y prueba, se corrige ese registro sin duplicarlo.
 
 SEDE DE EVALUACIÓN SIN CAMBIAR EL ORIGEN
 - La ficha individual muestra una sección SEDE DE EVALUACIÓN.
@@ -127,6 +137,10 @@ ADMINISTRACIÓN GENERAL
 - Todos los evaluadores habilitados tienen el mismo nivel de acceso dentro del Panel del evaluador.
 - Al ingresar al Panel del evaluador se abre por defecto la pantalla EVALUACIONES; Administración general e Informes y estadísticas permanecen disponibles en la barra superior.
 - La búsqueda nacional encuentra funcionarios por nombre, cédula, grado, comando o destacamento.
+- Los funcionarios se organizan por Comando y Destacamento. Cada destacamento se puede desplegar para ver su personal.
+- Los comandos y destacamentos aparecen cerrados por defecto. Al buscar un funcionario, las coincidencias se despliegan automáticamente.
+- Cada destacamento informa su cantidad de funcionarios y el estado: SIN EVALUACIONES [AÑO], EVALUACIONES [AÑO] INICIADAS o EVALUACIONES [AÑO] COMPLETAS.
+- Al seleccionar un funcionario se abre su ficha, todas las evaluaciones actuales y anteriores y el informe individual de mejora, mantenimiento o empeoramiento.
 - Cada funcionario abre su ficha completa, los resultados del año y todo su historial de evaluaciones anteriores y actuales.
 - Las fichas se pueden filtrar entre completas e incompletas; la lista informa qué datos faltan.
 - Desde esta sección también se puede registrar un funcionario, editar su ficha, cambiar su dependencia de origen y descargar el Excel general.
