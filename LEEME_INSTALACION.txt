@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-consulta-notas-2026-09-29
+   produccion-panel-inicio-evaluaciones-2026-09-30
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -104,7 +104,8 @@ EXCEL DE RESULTADOS
 - Las columnas se exportan en el orden oficial A–AF mostrado en la planilla: Fecha Prueba, Comando, Dependencia, Grado, Nombre, Apellido, Cédula, Celular, datos personales, estado físico y resultados.
 
 INFORMES Y ESTADÍSTICAS
-- En el panel general, el botón INFORMES Y ESTADÍSTICAS abre el resumen del año seleccionado.
+- La barra del Panel del evaluador permite pasar directamente entre Administración general, Evaluaciones e Informes y estadísticas.
+- INFORMES Y ESTADÍSTICAS abre el resumen del año seleccionado.
 - Se puede filtrar toda la DNB por comando y destacamento; las dependencias homónimas se distinguen por comando.
 - Muestra registrados, evaluaciones completas, pendientes, resultados por prueba, categorías y avance de las dependencias.
 - La pestaña COMPARAR permite contrastar dos comandos o dos destacamentos con cantidades y porcentajes comparables.
@@ -112,6 +113,29 @@ INFORMES Y ESTADÍSTICAS
 - El botón GUARDAR INFORME ESTADÍSTICO EN PDF abre la impresión del navegador. En la ventana de impresión se elige «Guardar como PDF» o «Guardar en Archivos» según el dispositivo.
 - No se generan PDF individuales de funcionarios. El informe colectivo no incluye nombres, cédulas ni fichas de salud.
 - Los cálculos usan los datos del panel ya cargados. Si se consulta sin conexión, pueden reflejar la última copia sincronizada.
+- RESULTADOS Y EVOLUCIÓN muestra por prueba: promedio, mediana, mínimo, máximo, categorías y cantidad de funcionarios que mejoraron, empeoraron o no cambiaron.
+- La evolución usa únicamente personas con dos evaluaciones comparables y siempre informa la cantidad base.
+
+PERSONAL HISTÓRICO Y DEPENDENCIA DE ORIGEN
+- La primera carga instala las fichas mínimas de 886 cédulas únicas provenientes de la planilla histórica.
+- Si una cédula ya existe en la app, su ficha y dependencia actuales prevalecen y no se sobrescriben.
+- Dos cédulas inconsistentes, asociadas a personas diferentes en la planilla, se excluyen para evitar mezclar identidades: 4.168.625-7 y 3.576.920-1.
+- Desde la ficha del funcionario se puede cambiar permanentemente el comando y destacamento de origen. Las evaluaciones se conservan y el número operativo se asigna en la nueva sede.
+- La sede de evaluación temporal continúa siendo una función separada del cambio institucional de origen.
+
+ADMINISTRACIÓN GENERAL
+- Todos los evaluadores habilitados tienen el mismo nivel de acceso dentro del Panel del evaluador.
+- Al ingresar al Panel del evaluador se abre por defecto la pantalla EVALUACIONES; Administración general e Informes y estadísticas permanecen disponibles en la barra superior.
+- La búsqueda nacional encuentra funcionarios por nombre, cédula, grado, comando o destacamento.
+- Cada funcionario abre su ficha completa, los resultados del año y todo su historial de evaluaciones anteriores y actuales.
+- Las fichas se pueden filtrar entre completas e incompletas; la lista informa qué datos faltan.
+- Desde esta sección también se puede registrar un funcionario, editar su ficha, cambiar su dependencia de origen y descargar el Excel general.
+
+CARGA MANUAL DE YO-YO
+- Dentro del Yo-Yo se puede seleccionar un funcionario e ingresar manualmente metros y tiempo en minutos/segundos.
+- Los metros deben corresponder a tramos de 20 m. La app calcula automáticamente nota y categoría.
+- Si ya existe un Yo-Yo del año, solicita confirmación antes de reemplazarlo.
+- No se permite una carga manual mientras exista una sesión compartida activa.
 
 ELIMINAR EVALUACIONES
 - Cada resultado guardado muestra ELIMINAR EVALUACIÓN ANTERIOR.
