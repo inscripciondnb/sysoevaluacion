@@ -10,7 +10,7 @@ INSTALACIÓN
 2. Guardá el proyecto.
 3. Implementar > Administrar implementaciones > lápiz > Nueva versión > Implementar.
 4. Abrí la URL /exec y verificá que muestre:
-   produccion-altas-manuales-historial-2026-09-30
+   produccion-edicion-ci-historial-2026-09-30
 5. Reemplazá el index.html del repositorio de GitHub Pages.
 6. Subí yoyo_oficial.mp3 al mismo directorio que index.html, conservando exactamente ese nombre.
 
@@ -78,6 +78,8 @@ REGISTRO DEL FUNCIONARIO
 - Todos los campos visibles de la ficha son obligatorios. La ergometría es obligatoria desde los 35 años inclusive.
 - Las preguntas de detalle aparecen únicamente cuando corresponde: al elegir Sí o la opción Otros.
 - Desde el resumen individual se ve la ficha completa y el evaluador puede editarla sin duplicar al funcionario ni perder sus resultados.
+- Al corregir la cédula o el nombre desde EDITAR FICHA, los mismos datos se sustituyen también en HistorialEvaluaciones; las notas anteriores permanecen vinculadas al funcionario.
+- La consulta por cédula incluye una recuperación segura para cambios realizados con versiones anteriores, siempre que el nombre sea único y el CI histórico anterior no pertenezca a otra ficha activa.
 
 CARGA MANUAL DE EVALUACIONES ANTERIORES
 - Desde la ficha individual, CARGAR EVALUACIÓN ANTERIOR permite ingresar una fecha y una o varias pruebas.

@@ -1,0 +1,30 @@
+NUEVO: CORREO ZIMBRA EN LA FICHA
+Los correos importados se muestran automáticamente en las fichas existentes por coincidencia exacta de cédula, sin crear funcionarios ni cambiar sus cédulas o evaluaciones.
+Panel del evaluador > Administración > Funcionario > Editar ficha > Correo Zimbra > Actualizar ficha.
+La edición sustituye el correo usado para enviar códigos. Se invalidan los códigos pendientes. El campo admite direcciones @minterior.gub.uy; no admite un correo asignado a otra cédula. Vaciarlo deshabilita la consulta por correo para esa ficha.
+El registro público no permite cambiar el correo que autoriza el acceso a notas. El evaluador puede asignarlo después desde la edición de ficha.
+Si ya instalaste la versión anterior e importaste la nómina, sólo reemplazá Code.gs, publicá una nueva versión de Apps Script y actualizá index.html. NO vuelvas a importar la nómina: se preservan los correos corregidos.
+La pestaña CorreosInstitucionales es la fuente única de los correos; se vincula con cada ficha por cédula al cargar el panel. No se añade otra copia del correo a la hoja Funcionarios.
+
+ACTUALIZACIÓN: CONSULTA DE NOTAS CON CÓDIGO — 12/10/2026
+
+El paquete está preparado, no desplegado. Realizar copia de seguridad antes de actualizar.
+
+1. En el proyecto EXISTENTE de Google Apps Script, reemplazar Code.gs por el de SOLO_APPS_SCRIPT_PRIVADO. Mantener sus propiedades y la planilla existente.
+2. Crear otro archivo de script llamado Correos_PRIVADO y pegar su contenido.
+3. Ejecutar instalarCorreosInstitucionales desde el editor y autorizar el permiso de envío de correo. No envía mensajes: importa 1.755 asociaciones en la pestaña privada CorreosInstitucionales. Si el directorio ya está cargado se detiene, sin sobrescribirlo.
+4. Revisar REVISAR_CORREOS.txt: una cédula tiene dos direcciones diferentes. No fue importada. Confirmar cuál corresponde antes de agregarla manualmente en la hoja, CI como texto. Se consolidaron las filas repetidas idénticas y se quitó un signo > sobrante de un correo.
+5. Implementar > Administrar implementaciones > Editar > Nueva versión > Implementar. Conservar la URL /exec configurada en index.html. La aplicación web debe ejecutar como propietario para enviar correo con su autorización. Si hay un manifiesto con permisos explícitos, agregar https://www.googleapis.com/auth/script.send_mail.
+6. Actualizar index.html en GitHub/Cloudflare. Mantener el archivo de audio. NO subir la carpeta SOLO_APPS_SCRIPT_PRIVADO, la nómina ni este ZIP a un repositorio público o a Cloudflare. Si se publicó anteriormente Code.gs con datos históricos, retirarlo de los archivos públicos y revisar el historial del repositorio.
+7. Probar con una cédula y un buzón propios/autorizados: recibir código, ver notas, comprobar que reutilizarlo falla. No se realizaron envíos reales durante la preparación.
+
+FUNCIONAMIENTO
+Código de seis dígitos, vigencia 10 minutos, un uso, hasta 5 intentos. Reenvío después de 60 segundos, máximo 5 por cédula/día. Límite global 500/día, sujeto además a la cuota de Google. Un nuevo código invalida el anterior. Si se agota la cuota, no se envía correo. El mensaje público no revela si existe la cédula o su dirección.
+El remitente es la cuenta de Google que ejecuta Apps Script; el destinatario es el correo Zimbra @minterior.gub.uy. No requiere contraseñas Zimbra. La recepción depende de permisos, cuotas y filtros del correo institucional.
+La consulta antigua sin código está bloqueada en el servidor. Las evaluaciones se buscan por cédula exacta y el ID del funcionario; no se adjudican por coincidencia de nombre. El panel del evaluador conserva su acceso existente.
+Para funcionarios ausentes de la nómina, un administrador debe verificar su correo y agregarlo en CorreosInstitucionales. Nunca se acepta un correo elegido libremente en la consulta pública. Si cambia una cédula, revisar el directorio institucional: no se reasigna el correo de otra identidad automáticamente.
+Las hojas CorreosInstitucionales y CodigosNotas deben permanecer privadas, al igual que toda la planilla. Ocultar una pestaña no sustituye los permisos del archivo.
+
+VALIDACIÓN LOCAL
+Sintaxis de frontend/backend; pruebas simuladas de uso único, vencimiento, bloqueo tras 5 errores, espera para reenvío, cédula inexistente y bloqueo de la consulta antigua. Falta probar despliegue y entrega real en Zimbra.
+Referencia técnica: https://developers.google.com/apps-script/reference/mail/mail-app
