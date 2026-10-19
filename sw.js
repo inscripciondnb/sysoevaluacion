@@ -1,4 +1,4 @@
-const CACHE='test-dnb-v2';
+const CACHE='test-dnb-v3';
 const APP=['./','./index.html','./test-dnb-logo.png','./favicon-32.png','./apple-touch-icon.png','./icon-192.png','./icon-512.png','./manifest.webmanifest'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
